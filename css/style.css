@@ -562,3 +562,8 @@ main { max-width: 1240px; margin: 0 auto; padding: 28px clamp(14px, 3vw, 32px) c
 @media (max-width: 1240px) and (min-width: 861px) { .hide-sm { display: none; } }
 @media (max-width: 1060px) and (min-width: 861px) { .topbar { gap: 10px; } .mainnav { margin-left: 0; gap: 0; } .logo-word { font-size: 17px; } .pill-dust { display: none; } .navlink { padding: 8px 7px; font-size: 14px; } }
 @media (max-width: 940px) and (min-width: 861px) { .logo-word { display: none; } }
+
+/* Ally portraits are tall (200x280): keep faces in view in square thumbnails */
+img[src^="assets/allies/"] { object-fit: cover; object-position: 50% 8%; }
+.s-card.full-art .card-art img { object-position: 50% 0%; }
+.s-card.full-art .kind-badge { position: relative; z-index: 1; }

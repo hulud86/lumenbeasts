@@ -94,7 +94,8 @@ ${o.count > 1 ? `<span class="card-badge badge-count">×${o.count}</span>` : ""}
     if (o.known === false) return `<div class="card mystery s-card k-${s.kind}" data-sid="${s.id}" style="--el:${e.main};--el-dark:${e.dark}"><div class="card-body"><div class="card-frame">
 <div class="card-head"><span class="card-name">???</span><span class="kind-badge">${ally ? "ALLY" : "ITEM"}</span></div><div class="card-art"><img src="${Art.uri(s)}" alt="" style="filter:brightness(0);opacity:.6"></div>
 <div class="card-type"><span class="species">${ally ? "Ally" : "Item"} · Unknown</span>${gems(s.rarity)}</div><div class="card-text"><span class="q">?</span></div><div class="card-foot"><span></span><span class="set-code">${esc(C.setName)} · ${s.id}</span><span></span></div></div></div></div>`;
-    return `<div class="card s-card k-${s.kind} r-${s.rarity}${o.tilt ? " tilt" : ""}" data-sid="${s.id}" style="--el:${e.main};--el-dark:${e.dark}">
+    const fa = ally && s.img;
+    return `<div class="card s-card k-${s.kind} r-${s.rarity}${fa ? " full-art" : ""}${o.tilt ? " tilt" : ""}" data-sid="${s.id}" style="--el:${e.main};--el-dark:${e.dark};--rc:${RAR[s.rarity].color}">
 <div class="card-body"><div class="card-frame">
 <div class="card-head"><span class="card-name">${esc(s.name)}</span><span class="kind-badge">${ally ? "ALLY" : "ITEM"}</span></div>
 <div class="card-art"><img src="${Art.uri(s)}" alt="${esc(s.name)}" loading="lazy" draggable="false"><span class="card-no">${s.id}</span></div>
