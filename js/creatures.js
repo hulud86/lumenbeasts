@@ -170,21 +170,31 @@
 
   // Distinguishing features used by the illustration engine
   const FEATS = {
-    Cindersnout: "pigsnout roundears", Wickling: "rays", Scorchbeetle: "", Blazehorn: "ramhorns spikes", Magmaw: "drips tallblob",
-    Solarax: "spread crest trail", Infernyx: "whiskers", Ignivore: "mane bulky noears", Splashkin: "puffy", Shellby: "pincers",
-    Tidalope: "horns long", Coralisk: "", Abyssquid: "squid", Narwhalen: "tusk", Whirlhydra: "heads3", Thalassor: "whiskers",
-    Sproutling: "sprout", Thistlehog: "spikes roundears tailDown", Barkbear: "roundears bulky tailDown", Vinewyrm: "", Mushgrove: "mushroom",
-    Thornstag: "antlers long", Mantidra: "blades", Grovemother: "tree", Sparkit: "tufts", Joltpop: "", Ampant: "",
-    Boltusk: "tusks bulky", Voltaroc: "spread crest", Galvanox: "crystals", Kaelzar: "", Cometail: "trail folded",
-    Astralynx: "tufts long", Seraphawk: "crest spread", Solenne: "rays", Nebulith: "nebula", Astraelis: "spread crest trail",
-    Frostbun: "longears tailDown fluffytail", Icicub: "roundears bulky tailDown", Snowpuff: "sleepy", Crystalback: "", Glacielle: "",
-    Rimewing: "spread", Yetimaw: "furry", Glaciorn: "tusks bulky long noears", Nibbat: "bat spread", Gloomshroom: "mushroom sleepy",
-    Hexpider: "spider", Phantomane: "mane long", Grinlurk: "grin", Umbraven: "folded crest", Voidmaw: "void", Wraithveil: "cloak",
-    Pebblet: "round", Burrowmole: "longsnout roundears", Geodillo: "shell roundears tailDown", Claybit: "", Quarrox: "nosehorn bulky noears",
-    Sandwyrm: "", Ambercroc: "longsnout noears long spikes tailDown", Terrashell: "shell mountain noears bulky", Prismagon: "crystals",
-    Puffwing: "folded", Breezeling: "long roundears fluffytail", Kitebug: "", Griffling: "spread crest", Zephyrine: "whiskers",
-    Skyhorn: "wings ramhorns", Vortexa: "cyclone", Stratoroc: "spread crest", Prismouse: "roundears", Hexacorn: "hexhorns",
-    Orbiton: "orb", Mimicrest: "chest", Manawyrm: "whiskers", Chronolith: "clock crystals", Tomeling: "book", Runeling: "", Spellmite: ""
+    Petalfly: "butterfly",
+    Shiverfin: "crystalfin",
+    Fizzlefish: "eelfish",
+    Moonmote: "crescent",
+    Nocthyrr: "perched",
+    Whirlit: "tornado",
+    Twinklet: "star",
+    Haloping: "halo",
+    Driplet: "drop",
+    Arcwyrm: "zigzag",
+    Cindersnout: "heavy pigsnout roundears", Wickling: "candle", Scorchbeetle: "beetle glowspots", Blazehorn: "hoof ramhorns", Magmaw: "drips wide",
+    Solarax: "raptor crest", Infernyx: "coil hood", Ignivore: "cat mane", Splashkin: "puffy", Shellby: "crab",
+    Tidalope: "hoof horns", Coralisk: "eel", Abyssquid: "squid", Narwhalen: "tusk", Whirlhydra: "heads3", Thalassor: "leviathan",
+    Sproutling: "sprout", Thistlehog: "rodent spikes roundears", Barkbear: "bear", Vinewyrm: "leaves", Mushgrove: "mushroom",
+    Thornstag: "hoof antlers", Mantidra: "blades", Grovemother: "tree", Sparkit: "cat", Joltpop: "ball", Ampant: "",
+    Boltusk: "heavy tusks", Voltaroc: "raptor crest", Galvanox: "bolts", Kaelzar: "front", Cometail: "swallow",
+    Astralynx: "cat tufts", Seraphawk: "raptor crest", Solenne: "rays", Nebulith: "nebula", Astraelis: "phoenix",
+    Frostbun: "rabbit", Icicub: "bear", Snowpuff: "sleepy fluffy", Crystalback: "beetle crystals", Glacielle: "dancer",
+    Rimewing: "gull", Yetimaw: "furry", Glaciorn: "heavy tusks trunk", Nibbat: "bat", Gloomshroom: "mushroom sleepy",
+    Hexpider: "spider", Phantomane: "hoof mane", Grinlurk: "grin", Umbraven: "raven crest", Voidmaw: "void", Wraithveil: "cloak",
+    Pebblet: "round", Burrowmole: "rodent longsnout noears", Geodillo: "rodent shell", Claybit: "lumpy", Quarrox: "heavy nosehorn",
+    Sandwyrm: "worm", Ambercroc: "reptile longsnout spikes", Terrashell: "heavy shell mountain", Prismagon: "crystal",
+    Puffwing: "chick", Breezeling: "long", Kitebug: "dragonfly", Griffling: "raptor", Zephyrine: "sky",
+    Skyhorn: "hoof wings ramhorns", Vortexa: "cyclone", Stratoroc: "raptor crest", Prismouse: "rodent", Hexacorn: "hoof hexhorns",
+    Orbiton: "orb", Mimicrest: "chest", Manawyrm: "coil runes", Chronolith: "clock crystals", Tomeling: "book", Runeling: "rune", Spellmite: "beetle glowspots"
   };
 
   // Fill defaults for the procedurally illustrated creatures

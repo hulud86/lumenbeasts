@@ -96,12 +96,11 @@ ${label ? `<div class="pack-count">${esc(label)}</div>` : ""}<div class="pack-cr
   /* ---------- chrome: nav, top bar, timers ---------- */
   function navHTML() {
     const n = G.claimable();
-    return NAV.map(([k, label]) => `<a class="navlink" href="#${k}" data-route="${k}">${I[k]}<span class="lbl" data-full="${label}" data-short="${SHORT[k]}">${label}</span>${k === "achievements" && n ? `<span class="badge-dot">${n}</span>` : ""}${k === "packs" && G.packsAvailable() ? `<span class="badge-dot">${G.packsAvailable()}</span>` : ""}</a>`).join("");
+    return NAV.map(([k, label]) => `<a class="navlink" href="#${k}" data-route="${k}">${I[k]}<span class="lbl lbl-full">${label}</span><span class="lbl lbl-short">${SHORT[k]}</span>${k === "achievements" && n ? `<span class="badge-dot">${n}</span>` : ""}${k === "packs" && G.packsAvailable() ? `<span class="badge-dot">${G.packsAvailable()}</span>` : ""}</a>`).join("");
   }
   function refreshChrome() {
     $("#mainnav").innerHTML = navHTML();
     $("#tabbar").innerHTML = navHTML();
-    $$("#tabbar .lbl").forEach(l => l.textContent = l.dataset.short);
     $$(".navlink").forEach(a => a.classList.toggle("active", a.dataset.route === current));
     const n = G.packsAvailable();
     $("#pillPackCount").textContent = n;
