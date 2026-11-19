@@ -33,6 +33,13 @@ window.CONFIG = {
   dustPerDuplicate: { common: 2, uncommon: 5, rare: 15, epic: 40, mythic: 150 },
   dustPackCost: 120,
 
+  // Leveling: spend duplicate copies + Shard Dust to raise a creature's level
+  leveling: {
+    maxLevel: 10,
+    perLevel: 0.06,                // +6% Attack, Defense and HP per level above 1
+    dustPerLevel: { common: 5, uncommon: 10, rare: 20, epic: 40, mythic: 80 }   // × current level
+  },
+
   rarities: {
     common:   { label: "Common",   order: 1, color: "#b9c3cf", gems: 1 },
     uncommon: { label: "Uncommon", order: 2, color: "#5fd08a", gems: 2 },

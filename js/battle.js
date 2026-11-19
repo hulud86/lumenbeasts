@@ -18,11 +18,11 @@ window.Battle = (function () {
   const ABILITY_CD = 3;
   const rnd = () => Math.random();
 
-  function makeFighter(cr, mult = 1, ally = null) {
+  function makeFighter(cr, mult = 1, ally = null, lv = 1) {
     let atkP = 0, defP = 0, hpP = 0;
     if (ally && (!ally.passive.el || ally.passive.el === cr.element)) { atkP = ally.passive.atk || 0; defP = ally.passive.def || 0; hpP = ally.passive.hp || 0; }
     const maxHp = Math.round((62 + cr.def * 1.05 + HP_BONUS[cr.rarity]) * mult * (1 + hpP / 100));
-    return { cr, name: cr.name, el: cr.element, maxHp, hp: maxHp, atk: cr.atk * mult * (1 + atkP / 100), def: cr.def * mult * (1 + defP / 100),
+    return { cr, lv, name: cr.name, el: cr.element, maxHp, hp: maxHp, atk: cr.atk * mult * (1 + atkP / 100), def: cr.def * mult * (1 + defP / 100),
       atkMul: 1, defMul: 1, cd: 0, burn: 0, weak: 0, shield: 0, dodge: false, crit: false, skip: null, fainted: false };
   }
 
@@ -160,11 +160,12 @@ window.Battle = (function () {
   const isleOpen = (S, isle) => isle === 0 || !!S.battle.cleared[keyOf(isle - 1, 3)];
   const stageOpen = (S, isle, stage) => isleOpen(S, isle) && (stage === 0 || !!S.battle.cleared[keyOf(isle, stage - 1)]);
 
-  function newBattle(info, playerTeamIds, allyId, itemIds) {
+  function newBattle(info, playerTeamIds, allyId, itemIds, levels) {
+    const lvOf = id => (levels && levels[id]) || 1, lvMult = id => 1 + C.leveling.perLevel * (lvOf(id) - 1);
     const ally = allyId ? SUP.byId[allyId] : null, eAlly = info.ally ? SUP.byId[info.ally] : null;
     return {
       info, round: 1, over: null, enemyItemUsed: false, commandUsed: false,
-      p: { team: playerTeamIds.map(id => makeFighter(byId[id], 1, ally)), active: 0, ally, items: itemIds.map(id => SUP.byId[id]), used: {} },
+      p: { team: playerTeamIds.map(id => makeFighter(byId[id], lvMult(id), ally, lvOf(id))), active: 0, ally, items: itemIds.map(id => SUP.byId[id]), used: {} },
       e: { team: info.team.map(id => makeFighter(byId[id], info.mult, eAlly)), active: 0, ally: eAlly, items: info.items.map(id => SUP.byId[id]) }
     };
   }
@@ -246,13 +247,13 @@ window.BattleUI = (function () {
     if (!ui.prep.items.length) ui.prep.items = items.slice(0, 2);
     ui.screen = "prep"; ui.stage = stage;
   }
-  function score(c, info) { const foeEl = B.ISLES[info.isle].el; return (c.atk + c.def) * (B.elMult(c.element, foeEl) > 1 ? 1.35 : B.elMult(foeEl, c.element) > 1 ? .8 : 1) + ({ common: 0, uncommon: 10, rare: 22, epic: 38, mythic: 55 })[c.rarity]; }
+  function score(c, info) { const foeEl = B.ISLES[info.isle].el; return (c.atk + c.def) * G().levelMult(c.id) * (B.elMult(c.element, foeEl) > 1 ? 1.35 : B.elMult(foeEl, c.element) > 1 ? .8 : 1) + ({ common: 0, uncommon: 10, rare: 22, epic: 38, mythic: 55 })[c.rarity]; }
   function autoPick(info, ids) { return ids.map(id => byId[id]).sort((a, b) => score(b, info) - score(a, info)).slice(0, 3).map(c => c.id); }
   function prepHTML() {
     const S = G().state, P = ui.prep, info = P.info, foeEl = B.ISLES[info.isle].el;
     const owned = Object.keys(S.owned).map(Number).map(id => byId[id]).filter(c => ui.prepFilter === "all" || c.element === ui.prepFilter).sort((a, b) => score(b, info) - score(a, info));
     const slot = i => { const id = P.team[i]; if (!id) return `<div class="tslot empty">Pick a creature</div>`; const c = byId[id], m = B.elMult(c.element, foeEl);
-      return `<button class="tslot" data-b-unpick="${id}" style="--rc:${RAR[c.rarity].color}"><img src="${Art().uri(c)}" alt=""><span class="tslot-n">${esc(c.name)}</span><span class="tslot-m ${m > 1 ? "good" : m < 1 ? "bad" : ""}">${icon(c.element, 13)} ${m > 1 ? "Strong" : m < 1 ? "Weak" : "Even"}</span></button>`; };
+      return `<button class="tslot" data-b-unpick="${id}" style="--rc:${RAR[c.rarity].color}"><img src="${Art().uri(c)}" alt=""><span class="tslot-n">${esc(c.name)}${G().levelOf(c.id) > 1 ? ` · Lv${G().levelOf(c.id)}` : ""}</span><span class="tslot-m ${m > 1 ? "good" : m < 1 ? "bad" : ""}">${icon(c.element, 13)} ${m > 1 ? "Strong" : m < 1 ? "Weak" : "Even"}</span></button>`; };
     const allyOpts = SUP.allies.filter(a => S.support[a.id]);
     const itemOpts = SUP.items.filter(a => S.support[a.id]);
     return `<button class="btn btn-ghost btn-sm" data-b-back="isle">← Back</button>
@@ -266,7 +267,7 @@ window.BattleUI = (function () {
  <div class="panel prep-roster"><h3>Your creatures <small>sorted by strength against ${EL[foeEl].label}</small></h3>
   <div class="chips">${["all", ...Object.keys(EL)].map(k => `<button class="chip ${ui.prepFilter === k ? "on" : ""}" data-b-filter="${k}" style="--cc:${k === "all" ? "#7ef0ff" : EL[k].main}">${k === "all" ? "All" : icon(k, 13) + " " + EL[k].label}</button>`).join("")}</div>
   <div class="roster">${owned.map(c => { const m = B.elMult(c.element, foeEl), on = P.team.includes(c.id);
-    return `<button class="rmon ${on ? "on" : ""}" data-b-pick="${c.id}" style="--rc:${RAR[c.rarity].color}"><img src="${Art().uri(c)}" alt=""><span class="rn">${esc(c.name)}</span><span class="rs">⚔${c.atk} 🛡${c.def}</span>${m !== 1 ? `<span class="rm ${m > 1 ? "good" : "bad"}">${m > 1 ? "▲" : "▼"}</span>` : ""}</button>`; }).join("") || `<p class="locked-note">Open some packs first.</p>`}</div>
+    return `<button class="rmon ${on ? "on" : ""}" data-b-pick="${c.id}" style="--rc:${RAR[c.rarity].color}"><img src="${Art().uri(c)}" alt=""><span class="rn">${esc(c.name)}${G().levelOf(c.id) > 1 ? ` <em class="lvtag">Lv${G().levelOf(c.id)}</em>` : ""}</span><span class="rs">⚔${Math.round(c.atk * G().levelMult(c.id))} 🛡${Math.round(c.def * G().levelMult(c.id))}</span>${m !== 1 ? `<span class="rm ${m > 1 ? "good" : "bad"}">${m > 1 ? "▲" : "▼"}</span>` : ""}</button>`; }).join("") || `<p class="locked-note">Open some packs first.</p>`}</div>
  </div>
 </div>`;
   }
@@ -278,7 +279,7 @@ window.BattleUI = (function () {
     const st = [F.burn ? `<span class="st burn">🔥 Burn</span>` : "", F.skip ? `<span class="st skip">${F.skip === "frozen" ? "❄ Frozen" : "⚡ Stunned"}</span>` : "", F.weak ? `<span class="st weak">▼ ATK</span>` : "", F.shield ? `<span class="st shield">🛡 ×${F.shield}</span>` : "", F.dodge ? `<span class="st dodge">💨 Evasive</span>` : "", F.atkMul > 1.01 ? `<span class="st up">▲ ATK</span>` : "", F.crit ? `<span class="st up">✦ Crit</span>` : ""].join("");
     return `<div class="fighter ${side}" id="f-${side}" style="--el:${EL[F.el].main};--rc:${RAR[F.cr.rarity].color}">
 <div class="f-art"><img src="${Art().uri(F.cr)}" alt="${esc(F.name)}"></div>
-<div class="f-info"><div class="f-name">${icon(F.el, 16)} ${esc(F.name)}<span class="f-rar">${RAR[F.cr.rarity].label}</span></div>
+<div class="f-info"><div class="f-name">${icon(F.el, 16)} ${esc(F.name)}${F.lv > 1 ? `<span class="f-lv">Lv ${F.lv}</span>` : ""}<span class="f-rar">${RAR[F.cr.rarity].label}</span></div>
 <div class="hpbar"><i style="width:${pct}%;background:${pct > 50 ? "linear-gradient(90deg,#5fd08a,#9ff0b0)" : pct > 22 ? "linear-gradient(90deg,#ffc94a,#ffe08a)" : "linear-gradient(90deg,#ff5a5a,#ff9a8a)"}"></i></div>
 <div class="f-hp">${F.hp} / ${F.maxHp} HP</div><div class="f-status">${st}</div></div></div>`;
   }
@@ -463,7 +464,7 @@ ${R.newAch && R.newAch.length ? `<div class="notice" style="background:rgba(255,
     if (d.bGo !== undefined) {
       const P = ui.prep; if (P.team.length !== 3) return;
       S.battle.team = { team: P.team, ally: P.ally, items: P.items }; G().save();
-      ui.fight = B.newBattle(P.info, P.team, P.ally, P.items); ui.fight.log = [`${esc(P.info.name)} wants to battle!`];
+      ui.fight = B.newBattle(P.info, P.team, P.ally, P.items, S.levels); ui.fight.log = [`${esc(P.info.name)} wants to battle!`];
       ui.screen = "fight"; ui.busy = false; rerender(); return;
     }
     if (d.bRetry !== undefined) { startPrep(ui.stage); rerender(); return; }

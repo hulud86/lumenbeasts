@@ -29,7 +29,7 @@ window.Game = (function () {
   function starterKit() { return Object.fromEntries((C.starterSupport || []).map(id => [id, 1])); }
   function fresh() {
     return { v: 1, created: Date.now(), owned: {}, firstSeen: {}, recent: [], packsOpened: 0, dailyClaims: 0, lastDaily: 0,
-      bonusPacks: C.welcomePacks, dust: 0, pulled: {}, holo: {}, support: starterKit(), battle: { cleared: {}, wins: 0, losses: 0, team: null }, achievements: {}, lastSeen: Date.now(), sound: true };
+      bonusPacks: C.welcomePacks, dust: 0, pulled: {}, holo: {}, levels: {}, support: starterKit(), battle: { cleared: {}, wins: 0, losses: 0, team: null }, achievements: {}, lastSeen: Date.now(), sound: true };
   }
   let S = null, storageOK = true, tampered = false;
   function load() {
@@ -40,6 +40,7 @@ window.Game = (function () {
         S = Object.assign(fresh(), data);
         tampered = sig !== hash(JSON.stringify(data) + SALT);
         if (!data.support) S.support = starterKit();      // older saves get the starter kit
+        if (!data.levels) S.levels = {};
         if (!data.battle) S.battle = { cleared: {}, wins: 0, losses: 0, team: null };
       } else S = fresh();
     } catch (e) { storageOK = false; S = fresh(); }
@@ -119,6 +120,21 @@ window.Game = (function () {
 
   /* ---------- collection helpers ---------- */
   const discovered = () => Object.keys(S.owned).length;
+  /* ---------- leveling ---------- */
+  const LV = C.leveling;
+  const levelOf = id => (S.levels && S.levels[id]) || 1;
+  const levelMult = id => 1 + LV.perLevel * (levelOf(id) - 1);
+  function levelCost(id) {
+    const L = levelOf(id); if (L >= LV.maxLevel) return null;
+    return { copies: Math.ceil(L / 2), dust: L * LV.dustPerLevel[byId[id].rarity] };
+  }
+  function canLevel(id) { const c = levelCost(id); return !!c && (S.owned[id] || 0) - 1 >= c.copies && S.dust >= c.dust; }
+  function levelUp(id) {
+    if (!canLevel(id)) return false;
+    const c = levelCost(id);
+    S.owned[id] -= c.copies; S.dust -= c.dust; S.levels[id] = levelOf(id) + 1; save(); return S.levels[id];
+  }
+  const levelsGained = () => Object.values(S.levels || {}).reduce((a, l) => a + l - 1, 0);
   const holoCount = () => Object.keys(S.holo || {}).length;
   const totalCards = () => Object.values(S.owned).reduce((a, b) => a + b, 0);
   const completion = () => discovered() / ALL.length;
@@ -149,6 +165,9 @@ window.Game = (function () {
     { id: "guardian-all", name: "Conqueror of Vael", desc: "Defeat all 10 isle guardians.", icon: "crown", goal: 10, prog: () => guardiansBeaten(), reward: { packs: 5, dust: 500 } },
     { id: "allies-6", name: "Fellowship", desc: "Recruit 6 different Allies.", icon: "heart", goal: 6, prog: () => SUP.allies.filter(x => S.support[x.id]).length, reward: { packs: 1 } },
     { id: "items-all", name: "Fully Stocked", desc: "Own every Item card.", icon: "pack", goal: SUP.items.length, prog: () => SUP.items.filter(x => S.support[x.id]).length, reward: { packs: 2 } },
+    { id: "level-5", name: "Trained Up", desc: "Raise a creature to level 5.", icon: "star", goal: 5, prog: () => Math.max(1, ...Object.values(S.levels || {})), reward: { packs: 1 } },
+    { id: "level-10", name: "Peak Form", desc: "Raise a creature to the max level, 10.", icon: "crown", goal: 10, prog: () => Math.max(1, ...Object.values(S.levels || {})), reward: { packs: 3 } },
+    { id: "levels-25", name: "Devoted Trainer", desc: "Gain 25 levels across your creatures.", icon: "heart", goal: 25, prog: levelsGained, reward: { dust: 200 } },
     { id: "copies-5", name: "Best Friends", desc: "Own 5 copies of one creature.", icon: "heart", goal: 5, prog: () => Math.max(0, ...Object.values(S.owned)), reward: { dust: 40 } }
   ];
   const guardiansBeaten = () => Object.keys(S.battle.cleared).filter(k => k.endsWith("-3")).length;
@@ -186,6 +205,6 @@ window.Game = (function () {
     get state() { return S; }, get storageOK() { return storageOK; }, get tampered() { return tampered; },
     ALL, byId, pools, SUP, unlockedIds, ACH_IDS: () => ACH.map(a => a.id), ACH, achStatus, claim, claimable,
     dailyReady, msUntilDaily, packsAvailable, clockRolledBack, openPack, buyPackWithDust,
-    discovered, holoCount, totalCards, completion, ownedOf, exportCode, importCode, reset, grantTestPack, save, simulate, generatePack
+    discovered, holoCount, totalCards, levelOf, levelMult, levelCost, canLevel, levelUp, completion, ownedOf, exportCode, importCode, reset, grantTestPack, save, simulate, generatePack
   };
 })();

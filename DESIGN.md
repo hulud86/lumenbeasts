@@ -166,6 +166,8 @@ Elowen (Grove Ranger), Coralie (Reef Captain), Brann (Forge Smith), Pip (Storm C
 
 **Story mode:** 10 isles × (2 trainers + the isle's leader + the isle's guardian). Enemy strength rises gently from ×0.70 to about ×1.12, and later opponents bring Rare and Epic creatures. First wins pay Shard Dust; leaders add a pack and guardians add 2. `node tools/balance.js` simulates players with different collection sizes against every stage.
 
+**Leveling:** creatures go from level 1 to 10. Going from level L to L+1 costs ⌈L/2⌉ duplicate copies plus L × a rarity Dust rate (Common 5, Uncommon 10, Rare 20, Epic 40, Mythic 80). You always keep at least one copy. Each level adds +6% Attack, Defense and HP in battle, so level 10 is +54%. Cards show a "Lv" badge and boosted stats. A green "▲ Level up" badge marks creatures you can afford to level, and My Collection has a "Can level up" filter and a Level sort. Three awards: Trained Up (Lv 5), Peak Form (Lv 10) and Devoted Trainer (25 levels gained). Tunable under `leveling` in `js/config.js`.
+
 ## 8. Technical plan
 
 **Stack:** plain HTML, CSS and JavaScript. No framework, no build step, no server, no paid services.

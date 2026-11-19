@@ -77,13 +77,13 @@
     const full = ["rare", "epic", "mythic"].includes(cr.rarity);
     return `<div class="card r-${cr.rarity}${full ? " full-art" : ""}${o.holo ? " holo" : ""}${o.tilt ? " tilt" : ""}" data-id="${cr.id}" style="${cardStyle(cr)}">
 <div class="card-body"><div class="card-frame">
-<div class="card-head"><span class="card-name">${esc(cr.name)}</span><span class="card-el" title="${EL[cr.element].label}">${Art.icon(cr.element)}</span></div>
+<div class="card-head"><span class="card-name">${esc(cr.name)}</span>${o.level > 1 ? `<span class="lv-chip">Lv ${o.level}</span>` : ""}<span class="card-el" title="${EL[cr.element].label}">${Art.icon(cr.element)}</span></div>
 <div class="card-art"><img src="${full ? Art.tallUri(cr) : Art.uri(cr)}" alt="${esc(cr.name)}" loading="lazy" draggable="false"><span class="card-no">#${pad(cr.id)}</span></div>
 <div class="card-type"><span class="species">${cr.title ? `<span class="mythic-title">${esc(cr.title)}</span>` : full ? `<span class="illus-tag">✦ ${RAR[cr.rarity].label} Illustration</span>` : `${EL[cr.element].label} · ${esc(cr.species || RAR[cr.rarity].label)}`}</span>${gems(cr.rarity)}</div>
 <div class="card-text"><div class="card-ab"><b>${esc(cr.ability.name)}</b> — ${esc(cr.ability.text)}</div><p class="card-flavor">${esc(cr.desc)}</p></div>
-<div class="card-foot"><span class="stat-chip stat-atk" title="Attack">${I.sword}${cr.atk}</span><span class="set-code">${full ? "<b>★</b> " : ""}${esc(C.setName)} · ${pad(cr.id)}/${G.ALL.length}</span><span class="stat-chip stat-def" title="Defense">${I.shield}${cr.def}</span></div>
+<div class="card-foot"><span class="stat-chip stat-atk${o.level > 1 ? " boosted" : ""}" title="Attack">${I.sword}${o.level > 1 ? Math.round(cr.atk * G.levelMult(cr.id)) : cr.atk}</span><span class="set-code">${full ? "<b>★</b> " : ""}${esc(C.setName)} · ${pad(cr.id)}/${G.ALL.length}</span><span class="stat-chip stat-def${o.level > 1 ? " boosted" : ""}" title="Defense">${I.shield}${o.level > 1 ? Math.round(cr.def * G.levelMult(cr.id)) : cr.def}</span></div>
 </div><div class="card-shine"></div><div class="card-holo"></div><div class="card-spark"></div>${o.holo ? `<div class="card-foil"></div><span class="holo-tag">✦ HOLO</span>` : ""}</div>
-${o.count > 1 ? `<span class="card-badge badge-count">×${o.count}</span>` : ""}${o.holoCount ? `<span class="card-badge badge-holo">✦ Holo${o.holoCount > 1 ? " ×" + o.holoCount : ""}</span>` : ""}${o.isNew ? `<span class="card-badge badge-new">NEW</span>` : ""}
+${o.count > 1 ? `<span class="card-badge badge-count">×${o.count}</span>` : ""}${o.canLevel ? `<span class="card-badge badge-lvl">▲ Level up</span>` : ""}${o.holoCount ? `<span class="card-badge badge-holo">✦ Holo${o.holoCount > 1 ? " ×" + o.holoCount : ""}</span>` : ""}${o.isNew ? `<span class="card-badge badge-new">NEW</span>` : ""}
 </div>`;
   }
   const SUP = window.SUPPORT;
@@ -178,6 +178,18 @@ ${label ? `<div class="pack-count">${esc(label)}</div>` : ""}<div class="pack-cr
   });
 
   /* ---------- inspector ---------- */
+  function levelBoxHTML(cr) {
+    const L = G.levelOf(cr.id), max = C.leveling.maxLevel, cost = G.levelCost(cr.id), owned = G.state.owned[cr.id] || 0;
+    const pips = Array.from({ length: max }, (_, i) => `<i class="${i < L ? "on" : ""}"></i>`).join("");
+    let action;
+    if (!cost) action = `<div class="lv-max">✦ Max level reached</div>`;
+    else {
+      const spare = owned - 1, okC = spare >= cost.copies, okD = G.state.dust >= cost.dust;
+      action = `<div class="lv-cost"><span class="${okC ? "" : "short"}">${cost.copies} duplicate${cost.copies > 1 ? "s" : ""} <small>(you have ${Math.max(0, spare)} spare)</small></span><span class="${okD ? "" : "short"}"><span class="dust-ico"></span> ${cost.dust} Shard Dust <small>(you have ${G.state.dust})</small></span></div>
+<button class="btn btn-gold btn-sm" data-levelup="${cr.id}" ${okC && okD ? "" : "disabled"}>Level up to ${L + 1}</button><div class="lv-gain">+${Math.round(C.leveling.perLevel * 100)}% Attack, Defense and HP in battle</div>`;
+    }
+    return `<div class="statbox lvbox" style="grid-column:span 2"><div class="k">Level ${L} / ${max}</div><div class="lv-pips">${pips}</div>${action}</div>`;
+  }
   function detailHTML(cr) {
     const owned = G.state.owned[cr.id] || 0;
     const e = EL[cr.element], r = RAR[cr.rarity];
@@ -190,8 +202,9 @@ ${label ? `<div class="pack-count">${esc(label)}</div>` : ""}<div class="pack-cr
 <div class="tags"><span class="tag">#${pad(cr.id)}</span><span class="tag">${Art.icon(cr.element, 14)} ${e.label}</span><span class="tag rar" style="--rc:${r.color}">${r.label}</span><span class="tag">Owned ×${owned}</span>${(G.state.holo || {})[cr.id] ? `<span class="tag" style="color:#b8f6ff">✦ Holo ×${G.state.holo[cr.id]}</span>` : ""}</div>
 <p class="desc">${esc(cr.desc)}</p>
 <div class="statgrid">
-<div class="statbox"><div class="k">Attack</div><div class="v">${cr.atk}</div>${meter(cr.atk, "linear-gradient(90deg,#ff7a5c,#c8301a)")}</div>
-<div class="statbox"><div class="k">Defense</div><div class="v">${cr.def}</div>${meter(cr.def, "linear-gradient(90deg,#5cb8ff,#1a5ac8)")}</div>
+${levelBoxHTML(cr)}
+<div class="statbox"><div class="k">Attack</div><div class="v">${Math.round(cr.atk * G.levelMult(cr.id))}${G.levelOf(cr.id) > 1 ? ` <small class="basev">base ${cr.atk}</small>` : ""}</div>${meter(Math.min(100, cr.atk * G.levelMult(cr.id) / 1.6), "linear-gradient(90deg,#ff7a5c,#c8301a)")}</div>
+<div class="statbox"><div class="k">Defense</div><div class="v">${Math.round(cr.def * G.levelMult(cr.id))}${G.levelOf(cr.id) > 1 ? ` <small class="basev">base ${cr.def}</small>` : ""}</div>${meter(Math.min(100, cr.def * G.levelMult(cr.id) / 1.6), "linear-gradient(90deg,#5cb8ff,#1a5ac8)")}</div>
 <div class="statbox"><div class="k">Ability</div><div class="v" style="font-size:15px">${esc(cr.ability.name)}</div><div style="font-size:13px;color:var(--muted);font-weight:700">${esc(cr.ability.text)}</div></div>
 <div class="statbox"><div class="k">Personality</div><div class="v" style="font-size:15px">${esc(cr.trait)}</div><div style="font-size:13px;color:var(--muted);font-weight:700">Size: ${esc(cr.size)} · Home: ${esc(e.isle)}</div></div>
 </div>
@@ -203,7 +216,7 @@ ${first ? `<p class="locked-note" style="margin-top:12px;font-size:13px">First d
     const cr = G.byId[id], owned = !!G.state.owned[id], hc = (G.state.holo || {})[id] || 0;
     const showHolo = holoView === undefined ? hc > 0 : holoView;
     const toggle = hc ? `<div class="row-btns" style="justify-content:center;margin-top:12px"><button class="btn btn-sm ${showHolo ? "btn-ghost" : "btn-gold"}" data-view="${id}:std">Standard</button><button class="btn btn-sm ${showHolo ? "btn-gold" : "btn-ghost"}" data-view="${id}:holo">✦ Holo ×${hc}</button></div>` : "";
-    openModal(`<div class="dex-detail inspect" style="padding:0;background:none;border:0"><div>${cardHTML(cr, { known: owned, tilt: true, holo: showHolo && hc > 0 })}${toggle}</div>${detailHTML(cr)}</div>`);
+    openModal(`<div class="dex-detail inspect" style="padding:0;background:none;border:0"><div>${cardHTML(cr, { known: owned, tilt: true, holo: showHolo && hc > 0, level: G.levelOf(id) })}${toggle}</div>${detailHTML(cr)}</div>`);
   }
 
   /* ---------- views ---------- */
@@ -243,8 +256,9 @@ ${!G.storageOK ? `<div class="notice">Your browser is blocking local storage (pr
   <div class="stat panel"><div class="k">Shard Dust</div><div class="v">${S.dust}</div></div>
   <div class="stat panel"><div class="k">Awards</div><div class="v">${Object.keys(S.achievements).length}<small> / ${G.ACH.length}</small></div></div>
 </div>
+${(() => { const n = G.ALL.filter(c => G.canLevel(c.id)).length; return n ? `<div class="notice lvnotice">▲ ${n} creature${n > 1 ? "s" : ""} can level up with your duplicates. <a href="#collection" data-lvgo>Level up now</a></div>` : ""; })()}
 <h2 class="h-section">Recent discoveries <small>${recent.length ? "" : "nothing yet"}</small></h2>
-${recent.length ? `<div class="grid small">${recent.map(cr => cardHTML(cr, { count: S.owned[cr.id], holo: !!(S.holo || {})[cr.id] })).join("")}</div>` : `<div class="panel empty">Your newest creatures will appear here after you open a pack.</div>`}
+${recent.length ? `<div class="grid small">${recent.map(cr => cardHTML(cr, { count: S.owned[cr.id], holo: !!(S.holo || {})[cr.id], level: G.levelOf(cr.id), canLevel: G.canLevel(cr.id) })).join("")}</div>` : `<div class="panel empty">Your newest creatures will appear here after you open a pack.</div>`}
 <div class="two-col">
   <div><h2 class="h-section">By element</h2><div class="panel bars">${elRows}</div></div>
   <div><h2 class="h-section">By rarity</h2><div class="panel rarity-row">${rarRows}</div>
@@ -290,7 +304,7 @@ ${packs ? `<button class="btn btn-gold" id="btnOpen">Tear it open</button><div c
     const S = G.state, f = filters.sort;
     const cmp = { id: (a, b) => a.id - b.id, name: (a, b) => a.name.localeCompare(b.name), rarity: (a, b) => RAR[b.rarity].order - RAR[a.rarity].order || a.id - b.id,
       atk: (a, b) => b.atk - a.atk, def: (a, b) => b.def - a.def, count: (a, b) => (S.owned[b.id] || 0) - (S.owned[a.id] || 0) || a.id - b.id,
-      newest: (a, b) => (S.firstSeen[b.id] || 0) - (S.firstSeen[a.id] || 0) }[f];
+      newest: (a, b) => (S.firstSeen[b.id] || 0) - (S.firstSeen[a.id] || 0), level: (a, b) => G.levelOf(b.id) - G.levelOf(a.id) || a.id - b.id }[f];
     return list.sort(cmp);
   }
   function chipsHTML(state, key) {
@@ -298,13 +312,13 @@ ${packs ? `<button class="btn btn-gold" id="btnOpen">Tear it open</button><div c
   }
   function collectionList() {
     const S = G.state, q = filters.q.trim().toLowerCase();
-    return sortList(G.ALL.filter(c => (!filters.holo || (S.holo || {})[c.id]) && (filters.missing || S.owned[c.id]) && (filters.el === "all" || c.element === filters.el) && (filters.rar === "all" || c.rarity === filters.rar)
+    return sortList(G.ALL.filter(c => (!filters.canlv || G.canLevel(c.id)) && (!filters.holo || (S.holo || {})[c.id]) && (filters.missing || S.owned[c.id]) && (filters.el === "all" || c.element === filters.el) && (filters.rar === "all" || c.rarity === filters.rar)
       && (!q || (S.owned[c.id] && (c.name.toLowerCase().includes(q) || c.ability.name.toLowerCase().includes(q))) || String(c.id) === q.replace("#", ""))));
   }
   function collectionGrid() {
     const list = collectionList(), S = G.state;
     return `<p class="result-line">${list.length} card${list.length === 1 ? "" : "s"} shown · ${G.discovered()} of ${G.ALL.length} discovered (${Math.round(G.completion() * 100)}%) · ${G.totalCards()} total copies · ${G.holoCount()} holo</p>` +
-      (list.length ? `<div class="grid">${list.map(c => cardHTML(c, { known: !!S.owned[c.id], count: S.owned[c.id], holo: !!(S.holo || {})[c.id], holoCount: (S.holo || {})[c.id] })).join("")}</div>`
+      (list.length ? `<div class="grid">${list.map(c => cardHTML(c, { known: !!S.owned[c.id], count: S.owned[c.id], holo: !!(S.holo || {})[c.id], holoCount: (S.holo || {})[c.id], level: G.levelOf(c.id), canLevel: G.canLevel(c.id) })).join("")}</div>`
         : `<div class="panel empty">${G.discovered() ? "No cards match these filters." : 'Your binder is empty. <a href="#packs">Open your first pack</a>.'}</div>`);
   }
   function tabsHTML(attr, cur) {
@@ -326,9 +340,10 @@ ${packs ? `<button class="btn btn-gold" id="btnOpen">Tear it open</button><div c
 <div class="toolbar panel">
 <input class="search" id="fq" type="search" placeholder="Search by name, ability or #number" value="${esc(filters.q)}" aria-label="Search">
 <select class="select" id="frar" aria-label="Rarity"><option value="all">All rarities</option>${Object.entries(RAR).map(([k, r]) => `<option value="${k}" ${filters.rar === k ? "selected" : ""}>${r.label}</option>`).join("")}</select>
-<select class="select" id="fsort" aria-label="Sort">${[["id", "Number"], ["name", "Name"], ["rarity", "Rarity"], ["atk", "Attack"], ["def", "Defense"], ["count", "Copies owned"], ["newest", "Newest"]].map(([k, l]) => `<option value="${k}" ${filters.sort === k ? "selected" : ""}>Sort: ${l}</option>`).join("")}</select>
+<select class="select" id="fsort" aria-label="Sort">${[["id", "Number"], ["name", "Name"], ["rarity", "Rarity"], ["level", "Level"], ["atk", "Attack"], ["def", "Defense"], ["count", "Copies owned"], ["newest", "Newest"]].map(([k, l]) => `<option value="${k}" ${filters.sort === k ? "selected" : ""}>Sort: ${l}</option>`).join("")}</select>
 <label class="toggle"><input type="checkbox" id="fmiss" ${filters.missing ? "checked" : ""}> Show missing</label>
 <label class="toggle"><input type="checkbox" id="fholo" ${filters.holo ? "checked" : ""}> Holo only</label>
+<label class="toggle"><input type="checkbox" id="flv" ${filters.canlv ? "checked" : ""}> Can level up${(() => { const n = G.ALL.filter(c => G.canLevel(c.id)).length; return n ? ` <b class="lvcount">${n}</b>` : ""; })()}</label>
 ${chipsHTML(filters, "el")}
 </div><div id="collGrid">${collectionGrid()}</div>`;
   }
@@ -342,7 +357,7 @@ ${chipsHTML(filters, "el")}
 <span><span class="nm">${k ? esc(c.name) : "???"}</span><span class="meta">${Art.icon(c.element, 13)} ${EL[c.element].label} · <span style="color:${RAR[c.rarity].color}">${RAR[c.rarity].label}</span></span></span>
 <span class="no">#${pad(c.id)}</span></button>`; }).join("") || `<div class="empty">No entries match.</div>`;
   }
-  function dexDetailHTML() { const cr = G.byId[dexState.sel]; return `<div class="dex-detail panel">${cardHTML(cr, { known: !!G.state.owned[cr.id], tilt: true })}${detailHTML(cr)}</div>`; }
+  function dexDetailHTML() { const cr = G.byId[dexState.sel]; return `<div class="dex-detail panel">${cardHTML(cr, { known: !!G.state.owned[cr.id], tilt: true, level: G.levelOf(cr.id) })}${detailHTML(cr)}</div>`; }
   function supDetailHTML(x) {
     const owned = G.state.support[x.id] || 0;
     if (!owned) return `<div class="detail"><div class="tags"><span class="tag">${x.id}</span><span class="tag rar" style="--rc:${RAR[x.rarity].color}">${RAR[x.rarity].label}</span></div><h2>Undiscovered</h2><p class="locked-note">You haven't found this ${x.kind === "ally" ? "Ally" : "Item"} yet. One Ally or Item comes in every pack.</p></div>`;
@@ -493,7 +508,20 @@ ${C.devTools ? `<section><h3>Testing tools</h3><p>For development only. Turn off
     if (dx) { dexState.sel = +dx.dataset.dex; if (window.matchMedia("(max-width: 900px)").matches) inspect(dexState.sel); else { $("#dexDetail").innerHTML = dexDetailHTML(); $$(".dex-row").forEach(r => r.classList.toggle("sel", +r.dataset.dex === dexState.sel)); } return; }
     const chip = t.closest("[data-el]"); if (chip) { filters.el = chip.dataset.el; render(); return; }
     const dchip = t.closest("[data-dexel]"); if (dchip) { dexState.el = dchip.dataset.dexel; render(); return; }
+    const lvb = t.closest("[data-levelup]");
+    if (lvb) {
+      const id = +lvb.dataset.levelup, nl = G.levelUp(id);
+      if (nl) {
+        const rc = lvb.getBoundingClientRect(); particles(rc.left + rc.width / 2, rc.top, ["#ffc94a", "#5fffc8", "#fff"], 30); Sfx.play("epic");
+        toast("▲", `${G.byId[id].name} reached level ${nl}!`, nl === C.leveling.maxLevel ? "Max level!" : `+${Math.round(C.leveling.perLevel * 100)}% stats`);
+        if (t.closest(".modal")) { inspect(id); if (current !== "battle") { const keep = window.scrollY; render(); window.scrollTo(0, keep); } }
+        else { const d = $("#dexDetail"); if (d) d.innerHTML = dexDetailHTML(); refreshChrome(); }
+        refreshChrome();
+      }
+      return;
+    }
     const sins = t.closest("[data-sinspect]"); if (sins) { inspectSupport(sins.dataset.sinspect); return; }
+    if (t.closest("[data-lvgo]")) { filters.tab = "creatures"; filters.canlv = true; }
     const ctab = t.closest("[data-ctab]"); if (ctab) { filters.tab = ctab.dataset.ctab; render(); return; }
     const dtab = t.closest("[data-dtab]"); if (dtab) { dexState.tab = dtab.dataset.dtab; dexState.sel = dtab.dataset.dtab === "creatures" ? 1 : (dtab.dataset.dtab === "allies" ? "A01" : "I01"); render(); return; }
     const card = t.closest(".card"); if (card && !t.closest(".modal") && !t.closest(".dex-detail")) { if (card.dataset.sid) inspectSupport(card.dataset.sid); else inspect(+card.dataset.id); return; }
@@ -511,6 +539,7 @@ ${C.devTools ? `<section><h3>Testing tools</h3><p>For development only. Turn off
     if (id === "frar") { filters.rar = e.target.value; $("#collGrid").innerHTML = collectionGrid(); }
     if (id === "fsort") { filters.sort = e.target.value; $("#collGrid").innerHTML = collectionGrid(); }
     if (id === "fmiss") { filters.missing = e.target.checked; if (filters.tab !== "creatures") render(); else $("#collGrid").innerHTML = collectionGrid(); }
+    if (id === "flv") { filters.canlv = e.target.checked; $("#collGrid").innerHTML = collectionGrid(); }
     if (id === "fholo") { filters.holo = e.target.checked; $("#collGrid").innerHTML = collectionGrid(); }
   });
   document.addEventListener("input", e => {
