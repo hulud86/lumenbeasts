@@ -70,6 +70,6 @@
 
   for (const x of [...allies, ...items]) x.no = x.id;
   // Painted-style adult portraits (200x280), shown as full-art Ally cards
-  allies.forEach(x => { x.img = `assets/allies/${x.id}.svg`; });
+  allies.forEach(x => { x.img = `assets/allies/${x.id}.svg`; x.silImg = `assets/allies/sil/${x.id}.svg`; });
   window.SUPPORT = { allies, items, all: [...allies, ...items], byId: Object.fromEntries([...allies, ...items].map(x => [x.id, x])) };
 })();

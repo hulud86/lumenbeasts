@@ -91,8 +91,8 @@ ${o.count > 1 ? `<span class="card-badge badge-count">×${o.count}</span>` : ""}
   function supportCardHTML(s, o = {}) {
     const e = EL[s.element] || { main: "#c9a0ff", dark: "#3a2a6a", label: "Any" };
     const ally = s.kind === "ally";
-    if (o.known === false) return `<div class="card mystery s-card k-${s.kind}" data-sid="${s.id}" style="--el:${e.main};--el-dark:${e.dark}"><div class="card-body"><div class="card-frame">
-<div class="card-head"><span class="card-name">???</span><span class="kind-badge">${ally ? "ALLY" : "ITEM"}</span></div><div class="card-art"><img src="${Art.uri(s)}" alt="" style="filter:brightness(0);opacity:.6"></div>
+    if (o.known === false) return `<div class="card mystery s-card k-${s.kind}${s.silImg ? " full-art" : ""}" data-sid="${s.id}" style="--el:${e.main};--el-dark:${e.dark};--rc:#3a4068"><div class="card-body"><div class="card-frame">
+<div class="card-head"><span class="card-name">???</span><span class="kind-badge">${ally ? "ALLY" : "ITEM"}</span></div><div class="card-art">${s.silImg ? `<img src="${s.silImg}" alt="Undiscovered Ally silhouette">` : `<img src="${Art.uri(s)}" alt="" style="filter:brightness(0);opacity:.6">`}</div>
 <div class="card-type"><span class="species">${ally ? "Ally" : "Item"} · Unknown</span>${gems(s.rarity)}</div><div class="card-text"><span class="q">?</span></div><div class="card-foot"><span></span><span class="set-code">${esc(C.setName)} · ${s.id}</span><span></span></div></div></div></div>`;
     const fa = ally && s.img;
     return `<div class="card s-card k-${s.kind} r-${s.rarity}${fa ? " full-art" : ""}${o.tilt ? " tilt" : ""}" data-sid="${s.id}" style="--el:${e.main};--el-dark:${e.dark};--rc:${RAR[s.rarity].color}">
@@ -372,7 +372,7 @@ ${chipsHTML(filters, "el")}
     if (dexState.tab !== "creatures") {
       const list = dexState.tab === "allies" ? SUP.allies : SUP.items, S = G.state;
       if (!SUP.byId[dexState.sel] || SUP.byId[dexState.sel].kind !== (dexState.tab === "allies" ? "ally" : "item")) dexState.sel = list[0].id;
-      const rows = list.map(x => { const k = !!S.support[x.id]; return `<button class="dex-row ${k ? "" : "unknown"} ${dexState.sel === x.id ? "sel" : ""}" data-sdex="${x.id}" style="--rc:${k ? RAR[x.rarity].color : "#3a4068"}"><span class="dex-thumb"><img src="${Art.uri(x)}" alt="" ${k ? "" : 'style="filter:brightness(0);opacity:.6"'}></span><span><span class="nm">${k ? esc(x.name) : "???"}</span><span class="meta">${x.kind === "ally" ? esc(x.role) : esc(x.type)} · <span style="color:${RAR[x.rarity].color}">${RAR[x.rarity].label}</span></span></span><span class="no">${x.id}</span></button>`; }).join("");
+      const rows = list.map(x => { const k = !!S.support[x.id]; return `<button class="dex-row ${k ? "" : "unknown"} ${dexState.sel === x.id ? "sel" : ""}" data-sdex="${x.id}" style="--rc:${k ? RAR[x.rarity].color : "#3a4068"}"><span class="dex-thumb"><img src="${k || !x.silImg ? Art.uri(x) : x.silImg}" alt="" ${k || x.silImg ? "" : 'style="filter:brightness(0);opacity:.6"'}></span><span><span class="nm">${k ? esc(x.name) : "???"}</span><span class="meta">${x.kind === "ally" ? esc(x.role) : esc(x.type)} · <span style="color:${RAR[x.rarity].color}">${RAR[x.rarity].label}</span></span></span><span class="no">${x.id}</span></button>`; }).join("");
       const sel = SUP.byId[dexState.sel];
       return `<h1 class="h-display">Encyclopedia</h1><p class="sub">The ${dexState.tab === "allies" ? "people of Vael who fight beside you" : "potions, gear and relics you can bring into battle"}.</p>${tabsHTML("dtab", dexState.tab)}
 <div class="dex"><div class="dex-list panel">${rows}</div><div class="dex-detail-wrap" id="dexDetail"><div class="dex-detail panel">${supportCardHTML(sel, { known: !!S.support[sel.id], tilt: true })}${supDetailHTML(sel)}</div></div></div>`;

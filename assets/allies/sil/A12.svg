@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 280">
+<defs>
+<linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2a3352"/><stop offset=".7" stop-color="#6a6a7a"/><stop offset="1" stop-color="#2a2a32"/></linearGradient>
+<linearGradient id="steel" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#5a6270"/><stop offset=".4" stop-color="#d8dee8"/><stop offset=".6" stop-color="#9aa2b0"/><stop offset="1" stop-color="#3a404a"/></linearGradient>
+<linearGradient id="cape" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#4a0a14"/><stop offset=".5" stop-color="#8a1a2a"/><stop offset="1" stop-color="#3a0610"/></linearGradient>
+<radialGradient id="skin" cx=".42" cy=".35" r=".8"><stop offset="0" stop-color="#deb08e"/><stop offset="1" stop-color="#9a6a4a"/></radialGradient>
+
+<radialGradient id="silbg" cx=".5" cy=".42" r=".7"><stop offset="0" stop-color="#2c3466"/><stop offset=".6" stop-color="#151a3a"/><stop offset="1" stop-color="#0a0d22"/></radialGradient>
+<filter id="sil" x="-10%" y="-10%" width="120%" height="120%">
+<feMorphology in="SourceAlpha" operator="dilate" radius="1.6" result="d"/><feGaussianBlur in="d" stdDeviation="2.4" result="b"/>
+<feFlood flood-color="#7ef0ff" flood-opacity=".55"/><feComposite in2="b" operator="in" result="glow"/>
+<feFlood flood-color="#060818"/><feComposite in2="SourceAlpha" operator="in" result="body"/>
+<feMerge><feMergeNode in="glow"/><feMergeNode in="body"/></feMerge></filter>
+</defs>
+<rect width="200" height="280" fill="url(#silbg)"/>
+<g fill="#7ef0ff" opacity=".35"><circle cx="30" cy="40" r="1"/><circle cx="170" cy="60" r="1.2"/><circle cx="24" cy="200" r=".9"/><circle cx="178" cy="220" r="1"/><circle cx="150" cy="24" r=".8"/></g>
+<text x="100" y="150" text-anchor="middle" font-family="Georgia,serif" font-size="120" font-weight="700" fill="#7ef0ff" opacity=".07">?</text>
+<g filter="url(#sil)"><!-- cape -->
+<path d="M66 90 C54 140 50 200 42 248 L158 248 C150 200 146 140 134 90Z" fill="url(#cape)" stroke="#1a0206" stroke-width="1.6"/>
+<!-- legs armor -->
+<path d="M82 170 L80 246 L98 248 L98 172Z M102 172 L102 248 L120 246 L118 170Z" fill="url(#steel)" stroke="#16181e" stroke-width="1.4"/>
+<path d="M80 204 H98 M102 204 H120" stroke="#2a2e36" stroke-width="2"/>
+<!-- torso armor -->
+<path d="M72 92 C70 120 74 150 80 176 L120 176 C126 150 130 120 128 92 C116 86 84 86 72 92Z" fill="url(#steel)" stroke="#16181e" stroke-width="1.6"/>
+<path d="M100 92 V172 M80 120 C92 126 108 126 120 120" stroke="#3a404a" stroke-width="1.4" fill="none"/>
+<path d="M78 160 H122 L120 172 H80Z" fill="#3a2414" stroke="#140a06" stroke-width="1"/><rect x="95" y="160" width="10" height="12" fill="#c9a04a" stroke="#5a3a0a" stroke-width="1"/>
+<!-- pauldrons -->
+<path d="M56 96 C56 80 76 78 82 90 C80 102 66 108 56 104Z M144 96 C144 80 124 78 118 90 C120 102 134 108 144 104Z" fill="url(#steel)" stroke="#16181e" stroke-width="1.6"/>
+<path d="M60 92 C66 88 74 88 78 92 M140 92 C134 88 126 88 122 92" stroke="#3a404a" stroke-width="1.2" fill="none"/>
+<!-- arms to sword pommel -->
+<path d="M58 104 C56 126 66 146 86 160 L92 152 C76 140 70 124 70 106Z M142 104 C144 126 134 146 114 160 L108 152 C124 140 130 124 130 106Z" fill="url(#steel)" stroke="#16181e" stroke-width="1.4"/>
+<!-- sword planted -->
+<path d="M100 172 L100 250" stroke="#dfe6f0" stroke-width="7" stroke-linecap="square"/><path d="M100 172 L100 250" stroke="#9aa2b0" stroke-width="1.4"/>
+<path d="M82 166 H118" stroke="#c9a04a" stroke-width="5" stroke-linecap="round"/><path d="M100 150 V166" stroke="#3a2414" stroke-width="6"/><circle cx="100" cy="147" r="5" fill="#c9a04a" stroke="#5a3a0a" stroke-width="1"/>
+<ellipse cx="92" cy="158" rx="6" ry="5" fill="#5a6270" stroke="#16181e" stroke-width="1"/><ellipse cx="108" cy="158" rx="6" ry="5" fill="#5a6270" stroke="#16181e" stroke-width="1"/>
+<!-- head -->
+<path d="M93 68 L93 88 L107 88 L107 68Z" fill="#9a6a4a"/>
+<path d="M86 48 C86 31 114 31 114 48 C114 63 109 73 100 75 C91 73 86 63 86 48Z" fill="url(#skin)" stroke="#3a2014" stroke-width="1.4"/>
+<path d="M85 50 C82 50 82 57 86 57 M115 50 C118 50 118 57 114 57" fill="url(#skin)" stroke="#3a2014" stroke-width="1"/>
+<path d="M90 50.5 Q94 49 97.5 50.5 Q94 52 90 50.5Z M102.5 50.5 Q106 49 110 50.5 Q106 52 102.5 50.5Z" fill="#fff"/><circle cx="93.8" cy="50.5" r="1.5" fill="#3a4a5a"/><circle cx="106.2" cy="50.5" r="1.5" fill="#3a4a5a"/>
+<path d="M89 46.5 L97.5 48.4 M102.5 48.4 L111 46.5" stroke="#6a6a6a" stroke-width="2.2" stroke-linecap="round"/>
+<path d="M100 51 L98.4 59 L101.6 59.4" stroke="#7a4a2e" stroke-width="1" fill="none"/>
+<path d="M95 66 H105" stroke="#6a3a2a" stroke-width="1.4"/>
+<path d="M87 58 C88 70 94 76 100 76 C106 76 112 70 113 58 C110 66 106 68 100 68 C94 68 90 66 87 58Z" fill="#8a8a8a" opacity=".55"/>
+<path d="M86 48 C84 32 96 26 106 28 C114 30 118 38 114 48 C112 40 106 36 98 38 C92 38 88 42 86 48Z" fill="#9a9a9e" stroke="#4a4a4e" stroke-width="1"/>
+<path d="M108 42 L111 52" stroke="#c8846a" stroke-width="1"/>
+
+</g>
+</svg>
