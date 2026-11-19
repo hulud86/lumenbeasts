@@ -403,6 +403,75 @@
     },
     dragon(p, r, el, F) {
       const L = `stroke="${p.line}" stroke-width="2.4" stroke-linejoin="round"`;
+      const D = ["lung", "chibi", "drake", "wyvern", "feathered"].find(k => F.has(k));
+      const tubeD = (d, w) => `<path d="${d}" stroke="${p.line}" stroke-width="${w + 5}" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="${d}" stroke="url(#bodyLin)" stroke-width="${w}" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`;
+      const claw = (x, y, a) => `<g transform="translate(${x} ${y}) rotate(${a})"><path d="M0 0 L0 14" stroke="${p.line}" stroke-width="8" stroke-linecap="round"/><path d="M0 0 L0 14" stroke="${p.body}" stroke-width="4.5" stroke-linecap="round"/><path d="M-4 15 l-2 5 M0 16 l0 5 M4 15 l2 5" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/></g>`;
+      if (D === "lung") {
+        const d = "M194 128 C172 70 136 146 106 102 C82 66 66 118 62 78";
+        return `<g fill="#fff" opacity=".35">${[[40, 120], [150, 60], [170, 140]].map(([x, y]) => `<ellipse cx="${x}" cy="${y}" rx="26" ry="8"/>`).join("")}</g>` +
+          `<path d="${d}" transform="translate(0 -9)" stroke="${p.horn}" stroke-width="10" fill="none" stroke-linecap="round" stroke-dasharray="3 5"/>` + tubeD(d, 17) +
+          `<path d="${d}" stroke="${p.belly}" stroke-width="6" fill="none" stroke-linecap="round" stroke-dasharray="4 4" opacity=".8"/>` +
+          claw(150, 112, 10) + claw(124, 120, -10) + claw(92, 94, 20) + claw(72, 104, -20) +
+          `<path d="M188 120 q12 -6 10 -20 q-6 6 -14 6Z" fill="${p.light}" stroke="${p.line}" stroke-width="1.6"/>` +
+          `<g transform="translate(58 62)"><path d="M-8 -12 C-16 -30 -10 -40 -2 -44 M-2 -32 L-12 -34 M8 -12 C14 -30 22 -36 30 -36 M18 -28 L22 -38" stroke="${p.horn}" stroke-width="4" fill="none" stroke-linecap="round"/>` +
+          `<path d="M14 -6 C24 -4 30 4 28 14 C22 10 18 8 12 8Z" fill="${p.horn}" stroke="${p.line}" stroke-width="1.6"/>` +
+          `<path d="M-24 4 C-22 -10 -8 -16 6 -14 C18 -12 22 0 18 10 C14 18 0 20 -10 16 L-30 14 C-36 12 -34 4 -24 4Z" fill="url(#body)" stroke="${p.line}" stroke-width="2.4"/>` +
+          `<path d="M-30 10 C-46 8 -54 22 -66 16 M-28 14 C-40 20 -44 34 -56 34" stroke="${p.light}" stroke-width="2" fill="none"/>` +
+          eye(0, -2, 5, { glow: p.light, slit: true }) + `<path d="M-32 12 l4 3 l4 -3" fill="#fff" stroke="${p.line}" stroke-width=".8"/></g>` +
+          glyph(el, 30, 40, .7, 0) + glyph(el, 176, 30, .6, 0);
+      }
+      if (D === "chibi") {
+        return shadowE(100, 146, 36) + `<path d="M64 120 L70 106 L78 116 L86 102 L94 114 L102 100 L110 114 L118 102 L126 116 L134 106 L138 120 C138 146 64 146 64 120Z" fill="#fffaf0" stroke="${p.line}" stroke-width="2.2" stroke-linejoin="round"/>` +
+          `<path d="M120 112 C140 116 148 104 144 96 C152 98 154 106 150 112" stroke="${p.line}" stroke-width="8" fill="none" stroke-linecap="round"/><path d="M120 112 C140 116 148 104 144 96" stroke="${p.body}" stroke-width="4.5" fill="none" stroke-linecap="round"/>` +
+          `<path d="M76 92 L50 70 L56 86 L44 90 L62 100Z M124 92 L150 70 L144 86 L156 90 L138 100Z" fill="${p.light}" stroke="${p.line}" stroke-width="2.2" stroke-linejoin="round"/>` +
+          `<ellipse cx="100" cy="108" rx="24" ry="20" fill="url(#body)" stroke="${p.line}" stroke-width="2.4"/><ellipse cx="100" cy="114" rx="14" ry="12" fill="url(#belly)"/>` +
+          `<path d="M80 50 L74 30 L90 44Z M120 50 L126 30 L110 44Z" fill="${p.horn}" stroke="${p.line}" stroke-width="2" stroke-linejoin="round"/>` +
+          `<circle cx="100" cy="66" r="28" fill="url(#body)" stroke="${p.line}" stroke-width="2.6"/><ellipse cx="100" cy="80" rx="16" ry="10" fill="url(#belly)"/>` +
+          eye(88, 64, 8.5, { iris: p.iris, line: p.line }) + eye(112, 64, 8.5, { iris: p.iris, line: p.line }) +
+          `<circle cx="94" cy="78" r="1.6" fill="${p.line}"/><circle cx="106" cy="78" r="1.6" fill="${p.line}"/><path d="M93 84 Q100 90 107 84" stroke="${p.line}" stroke-width="2" fill="none"/><path d="M96 86 l2 3 l2 -3" fill="#fff"/>` +
+          `<ellipse cx="78" cy="76" rx="5" ry="3" fill="#ff7aa0" opacity=".55"/><ellipse cx="122" cy="76" rx="5" ry="3" fill="#ff7aa0" opacity=".55"/>` +
+          `<g filter="url(#glow)" opacity=".9">${glyph(el, 128, 86, .5, 30)}</g>` + `<path d="M150 30 l-6 10 M160 40 l-10 2" stroke="${p.light}" stroke-width="2" stroke-linecap="round"/>`;
+      }
+      if (D === "drake") {
+        const moss = F.has("moss");
+        return shadowE(108, 146, 70) +
+          `<path d="M150 112 C174 116 190 124 198 140 L156 126Z" fill="url(#bodyLin)" stroke="${p.line}" stroke-width="2.4" stroke-linejoin="round"/>` +
+          `<rect x="128" y="112" width="18" height="30" rx="7" fill="${p.bodyDark}" stroke="${p.line}" stroke-width="2.2"/><rect x="72" y="114" width="18" height="28" rx="7" fill="${p.bodyDark}" stroke="${p.line}" stroke-width="2.2"/>` +
+          `<ellipse cx="112" cy="108" rx="50" ry="25" fill="url(#body)" stroke="${p.line}" stroke-width="2.6"/><path d="M80 122 C100 128 126 128 146 120" stroke="${p.belly}" stroke-width="6" fill="none" stroke-linecap="round" opacity=".8"/>` +
+          (moss ? `<path d="M70 92 C86 74 140 72 158 94 C140 88 90 88 70 92Z" fill="#5ccf6a" stroke="${p.line}" stroke-width="2"/>` + [[84, 84, "#ff9ac8"], [100, 78, "#fff6a8"], [118, 78, "#ff9ac8"], [136, 82, "#fff"], [110, 82, "#c4f59a"]].map(([x, y, c]) => `<circle cx="${x}" cy="${y}" r="3.4" fill="${c}" stroke="${p.line}" stroke-width=".8"/><path d="M${x} ${y + 3} v6" stroke="#2c6b34" stroke-width="1.4"/>`).join("") + `<path d="M126 74 V60" stroke="#6a4a22" stroke-width="3"/><circle cx="126" cy="56" r="8" fill="#3fa84a" stroke="${p.line}" stroke-width="1.6"/>`
+            : Array.from({ length: 6 }, (_, i) => { const x = 80 + i * 13; return `<path d="M${x - 6} ${88 + Math.abs(i - 2.5) * 2} L${x} ${72 + Math.abs(i - 2.5) * 3} L${x + 6} ${88 + Math.abs(i - 2.5) * 2}Z" fill="${p.horn}" stroke="${p.line}" stroke-width="1.6" stroke-linejoin="round"/>`; }).join("")) +
+          `<rect x="140" y="114" width="18" height="28" rx="7" fill="${p.body}" stroke="${p.line}" stroke-width="2.2"/><rect x="84" y="116" width="18" height="27" rx="7" fill="${p.body}" stroke="${p.line}" stroke-width="2.2"/>` +
+          `<path d="M42 84 C40 72 58 64 74 70 C78 64 86 62 88 68 C96 74 96 92 86 100 L50 104 C38 104 34 94 42 84Z" fill="url(#body)" stroke="${p.line}" stroke-width="2.6"/>` +
+          `<path d="M70 70 C66 56 74 48 82 46 C78 54 80 62 82 68Z M80 68 C82 56 92 50 100 52 C92 58 90 64 88 72Z" fill="${p.horn}" stroke="${p.line}" stroke-width="2"/>` +
+          `<path d="M38 96 L86 98" stroke="${p.line}" stroke-width="1.8"/><path d="M44 96 l3 4 l3 -4 M56 97 l3 4 l3 -4" fill="#fff" stroke="${p.line}" stroke-width=".8"/><circle cx="42" cy="86" r="2" fill="${p.line}"/>` +
+          (moss ? eye(70, 82, 5.5, { iris: p.iris, line: p.line, sleepy: true, lid: p.body }) : eye(70, 82, 5.5, { glow: p.light, slit: true })) + glyph(el, 170, 140, .5, 0, .8);
+      }
+      if (D === "wyvern") {
+        return shadowE(110, 146, 50) +
+          `<path d="M124 120 C150 132 176 134 192 120 C182 140 156 146 126 134Z" fill="url(#bodyLin)" stroke="${p.line}" stroke-width="2.4"/>` +
+          `<path d="M96 80 L44 20 L46 52 L18 50 L40 74 L14 84 L46 96 L36 116 L80 104Z" fill="url(#bodyLin)" stroke="${p.line}" stroke-width="2.4" stroke-linejoin="round" opacity=".95"/><path d="M96 80 L46 52 M92 88 L40 74 M88 96 L46 96 M84 102 L36 116" stroke="${p.line}" stroke-width="1.2" opacity=".45"/>` +
+          `<path d="M124 80 L176 20 L174 52 L200 54 L180 76 L200 88 L170 96 L178 116 L136 104Z" fill="url(#bodyLin)" stroke="${p.line}" stroke-width="2.4" stroke-linejoin="round"/><path d="M124 80 L174 52 M128 88 L180 76 M132 96 L170 96 M136 102 L178 116" stroke="${p.line}" stroke-width="1.2" opacity=".45"/>` +
+          `<path d="M44 20 l-6 -6 M176 20 l6 -6" stroke="${p.horn}" stroke-width="3" stroke-linecap="round"/>` +
+          `<path d="M96 132 L90 142 M124 132 L130 142" stroke="${p.line}" stroke-width="9" stroke-linecap="round"/><path d="M96 132 L90 142 M124 132 L130 142" stroke="${p.bodyDark}" stroke-width="5" stroke-linecap="round"/>` +
+          `<ellipse cx="110" cy="110" rx="24" ry="28" fill="url(#body)" stroke="${p.line}" stroke-width="2.6"/><path d="M98 96 h24 M96 106 h28 M98 116 h24 M100 126 h20" stroke="${p.belly}" stroke-width="3" stroke-linecap="round"/>` +
+          `<path d="M108 86 C104 70 100 58 92 46" stroke="${p.line}" stroke-width="17" fill="none" stroke-linecap="round"/><path d="M108 86 C104 70 100 58 92 46" stroke="${p.body}" stroke-width="12" fill="none" stroke-linecap="round"/>` +
+          `<path d="M86 30 L80 8 L94 24Z M98 28 L106 6 L106 30Z" fill="${p.horn}" stroke="${p.line}" stroke-width="1.8" stroke-linejoin="round"/>` +
+          `<path d="M78 36 C82 24 104 24 106 36 C108 44 100 48 92 48 L66 50 C60 50 58 42 64 40Z" fill="url(#body)" stroke="${p.line}" stroke-width="2.4"/><path d="M64 46 L92 54 L66 56Z" fill="#2a0a1a" stroke="${p.line}" stroke-width="1.6"/>` +
+          eye(92, 36, 4.6, { glow: p.light, slit: true }) +
+          `<g filter="url(#glow)" opacity=".9"><path d="M64 50 C44 54 30 66 10 66 C28 74 46 66 62 56Z" fill="${p.light}"/></g>` + Array.from({ length: 6 }, () => glyph(el, 10 + r() * 50, 56 + r() * 20, .3, r() * 90, .9)).join("");
+      }
+      if (D === "feathered") {
+        const fw = s => Array.from({ length: 6 }, (_, i) => { const a = -0.3 - i * .22; return `<path d="M${100 + s * 10} 88 Q${f(100 + s * (40 + i * 6))} ${f(88 + Math.sin(a) * 60)} ${f(100 + s * (64 + i * 10) * Math.cos(a * .4))} ${f(92 + Math.sin(a) * (70 - i * 4))} Q${f(100 + s * (44 + i * 4))} ${f(96 + Math.sin(a) * 40)} ${100 + s * 12} 98Z" fill="${i % 2 ? p.light : p.main}" stroke="${p.line}" stroke-width="1.6" stroke-linejoin="round"/>`; }).reverse().join("");
+        return fw(-1) + fw(1) +
+          [0, 1, 2, 3].map(i => `<path d="M118 112 C${146 + i * 6} ${118 + i * 6} ${170 + i * 4} ${130 + i * 6} ${192} ${120 + i * 10}" stroke="${i % 2 ? p.light : p.main}" stroke-width="${7 - i}" fill="none" stroke-linecap="round"/>`).join("") +
+          `<path d="M82 98 C84 82 118 80 124 98 C128 114 116 126 100 126 C86 126 78 114 82 98Z" fill="url(#body)" stroke="${p.line}" stroke-width="2.6"/><path d="M90 104 q10 6 20 0 M90 112 q10 6 20 0" stroke="${p.belly}" stroke-width="2.6" fill="none"/>` +
+          claw(90, 122, 10) + claw(110, 122, -10) +
+          `<path d="M94 88 C88 74 86 62 92 50" stroke="${p.line}" stroke-width="16" fill="none" stroke-linecap="round"/><path d="M94 88 C88 74 86 62 92 50" stroke="${p.body}" stroke-width="11" fill="none" stroke-linecap="round"/>` +
+          `<path d="M96 34 C98 18 110 10 120 10 C114 18 114 24 116 30 C122 22 132 20 138 24 C128 28 120 36 112 44Z" fill="${p.light}" stroke="${p.line}" stroke-width="1.8"/>` +
+          `<path d="M84 44 C88 32 110 32 112 44 C114 52 106 56 98 56 L74 58 C68 58 66 50 72 48Z" fill="url(#body)" stroke="${p.line}" stroke-width="2.4"/>` + eye(98, 44, 5, { glow: p.light }) +
+          `<path d="M72 54 L84 56" stroke="${p.line}" stroke-width="1.6"/>` + glyph(el, 40, 130, .6, 0, .8) + glyph(el, 160, 40, .6, 0, .8);
+      }
+
       if (F.has("front")) {
         const w = s => `<path d="M${100 + s * 14} 84 L${100 + s * 40} 30 L${100 + s * 64} 20 L${100 + s * 96} 36 C${100 + s * 84} 48 ${100 + s * 84} 60 ${100 + s * 92} 72 C${100 + s * 78} 68 ${100 + s * 70} 76 ${100 + s * 70} 88 C${100 + s * 58} 82 ${100 + s * 48} 88 ${100 + s * 44} 100 C${100 + s * 34} 94 ${100 + s * 24} 98 ${100 + s * 18} 106Z" fill="url(#bodyLin)" ${L}/><path d="M${100 + s * 40} 30 L${100 + s * 44} 100 M${100 + s * 64} 20 L${100 + s * 70} 88 M${100 + s * 96} 36 L${100 + s * 92} 72" stroke="${p.line}" stroke-width="1.2" opacity=".5"/>`;
         return shadowE(100, 146, 50) + w(-1) + w(1) + `<path d="M118 130 C150 140 170 126 168 110 C166 100 178 96 184 104" stroke="${p.line}" stroke-width="12" fill="none" stroke-linecap="round"/><path d="M118 130 C150 140 170 126 168 110 C166 100 178 96 184 104" stroke="${p.body}" stroke-width="7" fill="none" stroke-linecap="round"/>` +

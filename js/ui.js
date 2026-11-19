@@ -74,15 +74,15 @@
 </div></div></div>`;
     }
     const full = ["rare", "epic", "mythic"].includes(cr.rarity);
-    return `<div class="card r-${cr.rarity}${full ? " full-art" : ""}${o.tilt ? " tilt" : ""}" data-id="${cr.id}" style="${cardStyle(cr)}">
+    return `<div class="card r-${cr.rarity}${full ? " full-art" : ""}${o.holo ? " holo" : ""}${o.tilt ? " tilt" : ""}" data-id="${cr.id}" style="${cardStyle(cr)}">
 <div class="card-body"><div class="card-frame">
 <div class="card-head"><span class="card-name">${esc(cr.name)}</span><span class="card-el" title="${EL[cr.element].label}">${Art.icon(cr.element)}</span></div>
 <div class="card-art"><img src="${full ? Art.tallUri(cr) : Art.uri(cr)}" alt="${esc(cr.name)}" loading="lazy" draggable="false"><span class="card-no">#${pad(cr.id)}</span></div>
 <div class="card-type"><span class="species">${cr.title ? `<span class="mythic-title">${esc(cr.title)}</span>` : full ? `<span class="illus-tag">✦ ${RAR[cr.rarity].label} Illustration</span>` : `${EL[cr.element].label} · ${esc(cr.species || RAR[cr.rarity].label)}`}</span>${gems(cr.rarity)}</div>
 <div class="card-text"><div class="card-ab"><b>${esc(cr.ability.name)}</b> — ${esc(cr.ability.text)}</div><p class="card-flavor">${esc(cr.desc)}</p></div>
 <div class="card-foot"><span class="stat-chip stat-atk" title="Attack">${I.sword}${cr.atk}</span><span class="set-code">${full ? "<b>★</b> " : ""}${esc(C.setName)} · ${pad(cr.id)}/${G.ALL.length}</span><span class="stat-chip stat-def" title="Defense">${I.shield}${cr.def}</span></div>
-</div><div class="card-shine"></div><div class="card-holo"></div><div class="card-spark"></div></div>
-${o.count > 1 ? `<span class="card-badge badge-count">×${o.count}</span>` : ""}${o.isNew ? `<span class="card-badge badge-new">NEW</span>` : ""}
+</div><div class="card-shine"></div><div class="card-holo"></div><div class="card-spark"></div>${o.holo ? `<div class="card-foil"></div><span class="holo-tag">✦ HOLO</span>` : ""}</div>
+${o.count > 1 ? `<span class="card-badge badge-count">×${o.count}</span>` : ""}${o.holoCount ? `<span class="card-badge badge-holo">✦ Holo${o.holoCount > 1 ? " ×" + o.holoCount : ""}</span>` : ""}${o.isNew ? `<span class="card-badge badge-new">NEW</span>` : ""}
 </div>`;
   }
   const backHTML = () => `<div class="card-back"><div class="card-back-in">${I.shard}<span class="bw">${esc(C.gameName.toUpperCase())}</span></div></div>`;
@@ -168,7 +168,7 @@ ${label ? `<div class="pack-count">${esc(label)}</div>` : ""}<div class="pack-cr
     const meter = (v, c) => `<div class="meter"><i style="width:${v}%;background:${c}"></i></div>`;
     return `<div class="detail">
 <h2>${esc(cr.name)}</h2>${cr.title ? `<div class="title">${esc(cr.title)}</div>` : ""}
-<div class="tags"><span class="tag">#${pad(cr.id)}</span><span class="tag">${Art.icon(cr.element, 14)} ${e.label}</span><span class="tag rar" style="--rc:${r.color}">${r.label}</span><span class="tag">Owned ×${owned}</span></div>
+<div class="tags"><span class="tag">#${pad(cr.id)}</span><span class="tag">${Art.icon(cr.element, 14)} ${e.label}</span><span class="tag rar" style="--rc:${r.color}">${r.label}</span><span class="tag">Owned ×${owned}</span>${(G.state.holo || {})[cr.id] ? `<span class="tag" style="color:#b8f6ff">✦ Holo ×${G.state.holo[cr.id]}</span>` : ""}</div>
 <p class="desc">${esc(cr.desc)}</p>
 <div class="statgrid">
 <div class="statbox"><div class="k">Attack</div><div class="v">${cr.atk}</div>${meter(cr.atk, "linear-gradient(90deg,#ff7a5c,#c8301a)")}</div>
@@ -180,14 +180,16 @@ ${cr.lore ? `<div class="lore">${esc(cr.lore)}</div>` : ""}
 ${first ? `<p class="locked-note" style="margin-top:12px;font-size:13px">First discovered ${new Date(first).toLocaleDateString()}</p>` : ""}
 </div>`;
   }
-  function inspect(id) {
-    const cr = G.byId[id], owned = !!G.state.owned[id];
-    openModal(`<div class="dex-detail inspect" style="padding:0;background:none;border:0">${cardHTML(cr, { known: owned, tilt: true })}${detailHTML(cr)}</div>`);
+  function inspect(id, holoView) {
+    const cr = G.byId[id], owned = !!G.state.owned[id], hc = (G.state.holo || {})[id] || 0;
+    const showHolo = holoView === undefined ? hc > 0 : holoView;
+    const toggle = hc ? `<div class="row-btns" style="justify-content:center;margin-top:12px"><button class="btn btn-sm ${showHolo ? "btn-ghost" : "btn-gold"}" data-view="${id}:std">Standard</button><button class="btn btn-sm ${showHolo ? "btn-gold" : "btn-ghost"}" data-view="${id}:holo">✦ Holo ×${hc}</button></div>` : "";
+    openModal(`<div class="dex-detail inspect" style="padding:0;background:none;border:0"><div>${cardHTML(cr, { known: owned, tilt: true, holo: showHolo && hc > 0 })}${toggle}</div>${detailHTML(cr)}</div>`);
   }
 
   /* ---------- views ---------- */
   let current = "home", session = null;
-  const filters = { q: "", el: "all", rar: "all", sort: "id", missing: false };
+  const filters = { q: "", el: "all", rar: "all", sort: "id", missing: false, holo: false };
   const dexState = { q: "", el: "all", sel: 1 };
 
   function viewHome() {
@@ -217,11 +219,12 @@ ${!G.storageOK ? `<div class="notice">Your browser is blocking local storage (pr
   <div class="stat panel stat-ring"><div class="ring" style="--p:${pct}" data-label="${pct}%"></div><div><div class="k">Collection</div><div class="v">${d}<small> / ${tot}</small></div></div></div>
   <div class="stat panel"><div class="k">Cards owned</div><div class="v">${G.totalCards()}</div></div>
   <div class="stat panel"><div class="k">Packs opened</div><div class="v">${S.packsOpened}</div></div>
+  <div class="stat panel"><div class="k">Holo cards</div><div class="v">${G.holoCount()}</div></div>
   <div class="stat panel"><div class="k">Shard Dust</div><div class="v">${S.dust}</div></div>
   <div class="stat panel"><div class="k">Awards</div><div class="v">${Object.keys(S.achievements).length}<small> / ${G.ACH.length}</small></div></div>
 </div>
 <h2 class="h-section">Recent discoveries <small>${recent.length ? "" : "nothing yet"}</small></h2>
-${recent.length ? `<div class="grid small">${recent.map(cr => cardHTML(cr, { count: S.owned[cr.id] })).join("")}</div>` : `<div class="panel empty">Your newest creatures will appear here after you open a pack.</div>`}
+${recent.length ? `<div class="grid small">${recent.map(cr => cardHTML(cr, { count: S.owned[cr.id], holo: !!(S.holo || {})[cr.id] })).join("")}</div>` : `<div class="panel empty">Your newest creatures will appear here after you open a pack.</div>`}
 <div class="two-col">
   <div><h2 class="h-section">By element</h2><div class="panel bars">${elRows}</div></div>
   <div><h2 class="h-section">By rarity</h2><div class="panel rarity-row">${rarRows}</div>
@@ -249,7 +252,7 @@ ${packs ? `<button class="btn btn-gold" id="btnOpen">Tear it open</button><div c
     const w = C.pack.specialWeights, wt = Object.values(w).reduce((a, b) => a + b, 0);
     return `<div class="settings"><h2>Pack odds</h2><p>Every pack holds 10 cards: ${C.pack.slots.map(s => `${s.count} ${s.rarity === "special" ? "bonus" : RAR[s.rarity].label}`).join(", ")}. The bonus card rolls on these chances:</p>
 <div class="summary-stats">${Object.entries(w).map(([k, v]) => `<div class="rchip" style="--rc:${RAR[k].color}"><div class="t">${RAR[k].label}</div><div class="v">${(v / wt * 100).toFixed(v / wt < .1 ? 1 : 0)}%</div></div>`).join("")}</div>
-<p>No creature appears twice in the same pack. Duplicate copies across packs give Shard Dust: ${Object.entries(C.dustPerDuplicate).map(([k, v]) => `${RAR[k].label} ${v}`).join(" · ")}.</p></div>`;
+<p>Any card can also come out as a <b>Holo</b> version (${Math.round((C.holoChance || 0) * 100)}% chance per card, about ${Math.round((1 - Math.pow(1 - (C.holoChance || 0), 10)) * 100)}% of packs have at least one). Holos are tracked separately in your collection.</p><p>No creature appears twice in the same pack. Duplicate copies across packs give Shard Dust: ${Object.entries(C.dustPerDuplicate).map(([k, v]) => `${RAR[k].label} ${v}`).join(" · ")}.</p></div>`;
   }
 
   function revealHTML() {
@@ -259,7 +262,7 @@ ${packs ? `<button class="btn btn-gold" id="btnOpen">Tear it open</button><div c
 <div class="reveal-bar">${allOpen ? `<button class="btn btn-gold" id="btnSummary">See results</button>` : `<button class="btn btn-gold" id="btnRevealAll">Reveal all</button>`}</div>
 <div class="reveal-grid">${s.cards.map((c, i) => {
       const r = c.creature.rarity, open = s.opened.has(i);
-      return `<div class="flip ${open ? "open" : ""} r-${r} ${["rare", "epic", "mythic"].includes(r) ? "tease-" + r : ""}" data-i="${i}" style="--i:${i}"><div class="flip-in">${cardHTML(c.creature, { isNew: c.isNew && open })}${backHTML()}</div></div>`;
+      return `<div class="flip ${open ? "open" : ""} r-${r} ${["rare", "epic", "mythic"].includes(r) ? "tease-" + r : ""}${c.holo ? " tease-holo" : ""}" data-i="${i}" style="--i:${i}"><div class="flip-in">${cardHTML(c.creature, { isNew: c.isNew && open, holo: c.holo })}${backHTML()}</div></div>`;
     }).join("")}</div></div>`;
   }
 
@@ -275,13 +278,13 @@ ${packs ? `<button class="btn btn-gold" id="btnOpen">Tear it open</button><div c
   }
   function collectionList() {
     const S = G.state, q = filters.q.trim().toLowerCase();
-    return sortList(G.ALL.filter(c => (filters.missing || S.owned[c.id]) && (filters.el === "all" || c.element === filters.el) && (filters.rar === "all" || c.rarity === filters.rar)
+    return sortList(G.ALL.filter(c => (!filters.holo || (S.holo || {})[c.id]) && (filters.missing || S.owned[c.id]) && (filters.el === "all" || c.element === filters.el) && (filters.rar === "all" || c.rarity === filters.rar)
       && (!q || (S.owned[c.id] && (c.name.toLowerCase().includes(q) || c.ability.name.toLowerCase().includes(q))) || String(c.id) === q.replace("#", ""))));
   }
   function collectionGrid() {
     const list = collectionList(), S = G.state;
-    return `<p class="result-line">${list.length} card${list.length === 1 ? "" : "s"} shown · ${G.discovered()} of ${G.ALL.length} discovered (${Math.round(G.completion() * 100)}%) · ${G.totalCards()} total copies</p>` +
-      (list.length ? `<div class="grid">${list.map(c => cardHTML(c, { known: !!S.owned[c.id], count: S.owned[c.id] })).join("")}</div>`
+    return `<p class="result-line">${list.length} card${list.length === 1 ? "" : "s"} shown · ${G.discovered()} of ${G.ALL.length} discovered (${Math.round(G.completion() * 100)}%) · ${G.totalCards()} total copies · ${G.holoCount()} holo</p>` +
+      (list.length ? `<div class="grid">${list.map(c => cardHTML(c, { known: !!S.owned[c.id], count: S.owned[c.id], holo: !!(S.holo || {})[c.id], holoCount: (S.holo || {})[c.id] })).join("")}</div>`
         : `<div class="panel empty">${G.discovered() ? "No cards match these filters." : 'Your binder is empty. <a href="#packs">Open your first pack</a>.'}</div>`);
   }
   function viewCollection() {
@@ -291,6 +294,7 @@ ${packs ? `<button class="btn btn-gold" id="btnOpen">Tear it open</button><div c
 <select class="select" id="frar" aria-label="Rarity"><option value="all">All rarities</option>${Object.entries(RAR).map(([k, r]) => `<option value="${k}" ${filters.rar === k ? "selected" : ""}>${r.label}</option>`).join("")}</select>
 <select class="select" id="fsort" aria-label="Sort">${[["id", "Number"], ["name", "Name"], ["rarity", "Rarity"], ["atk", "Attack"], ["def", "Defense"], ["count", "Copies owned"], ["newest", "Newest"]].map(([k, l]) => `<option value="${k}" ${filters.sort === k ? "selected" : ""}>Sort: ${l}</option>`).join("")}</select>
 <label class="toggle"><input type="checkbox" id="fmiss" ${filters.missing ? "checked" : ""}> Show missing</label>
+<label class="toggle"><input type="checkbox" id="fholo" ${filters.holo ? "checked" : ""}> Holo only</label>
 ${chipsHTML(filters, "el")}
 </div><div id="collGrid">${collectionGrid()}</div>`;
   }
@@ -363,7 +367,8 @@ ${G.claimable() > 1 ? `<button class="btn btn-gold btn-sm" id="claimAll" style="
     if (r === "mythic") { setTimeout(() => { flash("rgba(255,201,74,.9)"); particles(cx, cy, ["#ffc94a", "#ff6fd0", "#7ef0ff", "#fff"], 70); banner("Mythic!", "#ffc94a"); Sfx.play("mythic"); }, 250); }
     else if (r === "epic") { setTimeout(() => { flash("rgba(180,108,255,.7)"); particles(cx, cy, ["#b46cff", "#ffd1f2", "#fff"], 46); banner("Epic!", "#d6a8ff"); Sfx.play("epic"); }, 250); }
     else if (r === "rare") { setTimeout(() => { particles(cx, cy, ["#4aa8ff", "#bff3ff"], 24); Sfx.play("rare"); }, 250); }
-    else if (!quiet) Sfx.play("flip");
+    else if (!quiet && !c.holo) Sfx.play("flip");
+    if (c.holo) setTimeout(() => { particles(cx, cy, ["#ff6fd0", "#ffd93b", "#5fffc8", "#4aa8ff", "#b46cff", "#fff"], 40); if (r !== "mythic" && r !== "epic") { banner("Holo!", "#fff"); flash("rgba(190,220,255,.55)"); Sfx.play("rare"); } }, 300);
     updateRevealHeader();
   }
   function updateRevealHeader() {
@@ -383,7 +388,7 @@ ${G.claimable() > 1 ? `<button class="btn btn-gold btn-sm" id="claimAll" style="
     const best = [...s.cards].sort((a, b) => RAR[b.creature.rarity].order - RAR[a.creature.rarity].order)[0];
     const rows = [...s.cards].sort((a, b) => (b.isNew - a.isNew) || RAR[b.creature.rarity].order - RAR[a.creature.rarity].order).map(c => {
       const cr = c.creature, r = RAR[cr.rarity];
-      return `<div class="sum-row" data-inspect="${cr.id}" style="--rc:${r.color}"><span class="dex-thumb"><img src="${Art.uri(cr)}" alt=""></span><span><div class="nm">${esc(cr.name)}</div><div class="rr">${r.label}</div></span>${c.isNew ? `<span class="tagnew">NEW</span>` : `<span class="tagdup">×${c.count} · +${c.dust}</span>`}</div>`;
+      return `<div class="sum-row" data-inspect="${cr.id}" style="--rc:${r.color}"><span class="dex-thumb"><img src="${Art.uri(cr)}" alt=""></span><span><div class="nm">${esc(cr.name)}</div><div class="rr">${r.label}</div></span>${c.holo ? `<span class="tagholo">✦ HOLO</span>` : ""}${c.isNew ? `<span class="tagnew">NEW</span>` : `<span class="tagdup">×${c.count} · +${c.dust}</span>`}</div>`;
     }).join("");
     const more = G.packsAvailable();
     openModal(`<div class="summary-head"><h2>Pack results</h2><p class="sub" style="margin:4px 0 0">Best pull: <b style="color:${RAR[best.creature.rarity].color}">${esc(best.creature.name)}</b> (${RAR[best.creature.rarity].label})</p></div>
@@ -391,6 +396,7 @@ ${G.claimable() > 1 ? `<button class="btn btn-gold btn-sm" id="claimAll" style="
 <div class="rchip" style="--rc:#ff6fd0"><div class="t">New discoveries</div><div class="v">${news.length}</div></div>
 <div class="rchip" style="--rc:#7ef0ff"><div class="t">Duplicates</div><div class="v">${dups.length}</div></div>
 <div class="rchip" style="--rc:#ffc94a"><div class="t">Dust earned</div><div class="v">+${s.dust}</div></div>
+<div class="rchip" style="--rc:#b8f6ff"><div class="t">Holos</div><div class="v">${s.cards.filter(c => c.holo).length}</div></div>
 <div class="rchip" style="--rc:#5fd08a"><div class="t">Collection</div><div class="v">${G.discovered()}<small>/${G.ALL.length}</small></div></div></div>
 ${s.newAchievements.length ? `<div class="notice" style="background:rgba(255,201,74,.1);border-color:rgba(255,201,74,.4);color:#ffe7a8">🏆 Unlocked: ${s.newAchievements.map(a => esc(a.name)).join(", ")}. <a href="#achievements" data-close>Claim your rewards</a></div>` : ""}
 <div class="summary-list">${rows}</div>
@@ -429,6 +435,7 @@ ${C.devTools ? `<section><h3>Testing tools</h3><p>For development only. Turn off
     if (claimBtn) { const r = G.claim(claimBtn.dataset.claim); if (r) { Sfx.play("claim"); const rc = claimBtn.getBoundingClientRect(); particles(rc.left + rc.width / 2, rc.top, ["#ffc94a", "#fff"], 24); toast("🏆", "Reward claimed", [r.packs ? `+${r.packs} pack${r.packs > 1 ? "s" : ""}` : "", r.dust ? `+${r.dust} dust` : ""].filter(Boolean).join(" · ")); render(); } return; }
     if (t.closest("#claimAll")) { G.ACH.forEach(a => G.claim(a.id)); Sfx.play("claim"); toast("🏆", "All rewards claimed"); render(); return; }
     const ins = t.closest("[data-inspect]"); if (ins) { inspect(+ins.dataset.inspect); return; }
+    const vw = t.closest("[data-view]"); if (vw) { const [vid, mode] = vw.dataset.view.split(":"); inspect(+vid, mode === "holo"); return; }
     const dx = t.closest("[data-dex]");
     if (dx) { dexState.sel = +dx.dataset.dex; if (window.matchMedia("(max-width: 900px)").matches) inspect(dexState.sel); else { $("#dexDetail").innerHTML = dexDetailHTML(); $$(".dex-row").forEach(r => r.classList.toggle("sel", +r.dataset.dex === dexState.sel)); } return; }
     const chip = t.closest("[data-el]"); if (chip) { filters.el = chip.dataset.el; render(); return; }
@@ -448,6 +455,7 @@ ${C.devTools ? `<section><h3>Testing tools</h3><p>For development only. Turn off
     if (id === "frar") { filters.rar = e.target.value; $("#collGrid").innerHTML = collectionGrid(); }
     if (id === "fsort") { filters.sort = e.target.value; $("#collGrid").innerHTML = collectionGrid(); }
     if (id === "fmiss") { filters.missing = e.target.checked; $("#collGrid").innerHTML = collectionGrid(); }
+    if (id === "fholo") { filters.holo = e.target.checked; $("#collGrid").innerHTML = collectionGrid(); }
   });
   document.addEventListener("input", e => {
     if (e.target.id === "fq") { filters.q = e.target.value; $("#collGrid").innerHTML = collectionGrid(); }

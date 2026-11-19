@@ -192,9 +192,10 @@
 
   // Distinguishing features used by the illustration engine
   const FEATS = {
-    Hexling: "", Boolet: "", Grimalkyn: "cat hat", Mawfin: "angler", Wrapscallion: "mummy", Cindrake: "front", Tribark: "heads3",
+    Pyrrhavex: "",
+    Hexling: "", Boolet: "", Grimalkyn: "cat hat", Mawfin: "angler", Wrapscallion: "mummy", Cindrake: "chibi", Tribark: "heads3",
     Banshriek: "banshee", Ghastmire: "bog", Taurock: "bull", Basilix: "coil crown runes", Kitsuna: "ninetails tufts", Sirensong: "", Bramblehag: "hag",
-    Lunarfang: "werewolf", Mossdrake: "perched", Krakoth: "", Gravewarden: "knight", Hrimvald: "front", Aerovant: "",
+    Lunarfang: "werewolf", Mossdrake: "drake moss", Krakoth: "", Gravewarden: "knight", Hrimvald: "wyvern", Aerovant: "feathered",
     Petalfly: "butterfly",
     Shiverfin: "crystalfin",
     Fizzlefish: "eelfish",
@@ -210,7 +211,7 @@
     Tidalope: "hoof horns", Coralisk: "eel", Abyssquid: "squid", Narwhalen: "tusk", Whirlhydra: "heads3", Thalassor: "leviathan",
     Sproutling: "sprout", Thistlehog: "rodent spikes roundears", Barkbear: "bear", Vinewyrm: "leaves", Mushgrove: "mushroom",
     Thornstag: "hoof antlers", Mantidra: "blades", Grovemother: "tree", Sparkit: "cat", Joltpop: "ball", Ampant: "",
-    Boltusk: "heavy tusks", Voltaroc: "raptor crest", Galvanox: "bolts", Kaelzar: "front", Cometail: "swallow",
+    Boltusk: "heavy tusks", Voltaroc: "raptor crest", Galvanox: "bolts", Kaelzar: "lung", Cometail: "swallow",
     Astralynx: "cat tufts", Seraphawk: "raptor crest", Solenne: "rays", Nebulith: "nebula", Astraelis: "phoenix",
     Frostbun: "rabbit", Icicub: "bear", Snowpuff: "sleepy fluffy", Crystalback: "beetle crystals", Glacielle: "dancer",
     Rimewing: "gull", Yetimaw: "furry", Glaciorn: "heavy tusks trunk", Nibbat: "bat", Gloomshroom: "mushroom sleepy",

@@ -368,6 +368,30 @@ main { max-width: 1240px; margin: 0 auto; padding: 28px clamp(14px, 3vw, 32px) c
 @keyframes toastIn { from { opacity: 0; transform: translateY(14px); } }
 .notice { padding: 12px 16px; border-radius: 14px; background: rgba(255, 111, 208, .1); border: 1px solid rgba(255, 111, 208, .35); color: #ffd1f2; font-weight: 700; font-size: 14px; margin-bottom: 16px; }
 
+
+/* =========================================================
+   HOLO VARIANTS: any card can drop as an animated rainbow-foil Holo
+   ========================================================= */
+.card.holo .card-body { box-shadow: 0 8px 24px rgba(0, 0, 0, .5), 0 0 22px rgba(255, 111, 208, .35), 0 0 34px rgba(126, 240, 255, .3); }
+.card-foil { position: absolute; inset: 0; border-radius: 5cqw; pointer-events: none; z-index: 4; overflow: hidden;
+  background:
+    radial-gradient(circle at var(--mx, 50%) var(--my, 40%), rgba(255, 255, 255, .55), transparent 40%),
+    repeating-linear-gradient(calc(115deg + var(--hue, 0deg)), #ff3cac 0%, #ffd93b 6%, #2bffc6 12%, #3ca8ff 18%, #b84cff 24%, #ff3cac 30%);
+  background-size: 100% 100%, 400% 400%;
+  mix-blend-mode: color-dodge; opacity: .38; animation: holoShift 7s linear infinite; }
+.card-foil::after { content: ""; position: absolute; inset: 0;
+  background-image: radial-gradient(.5cqw .5cqw at 20% 30%, #fff 50%, transparent 51%), radial-gradient(.4cqw .4cqw at 70% 60%, #fff 50%, transparent 51%), radial-gradient(.35cqw .35cqw at 45% 85%, #fff 50%, transparent 51%), radial-gradient(.45cqw .45cqw at 85% 15%, #fff 50%, transparent 51%);
+  background-size: 9cqw 9cqw; mix-blend-mode: overlay; opacity: .9; animation: sparkle 1.6s ease-in-out infinite alternate; }
+.card.holo:hover .card-foil, .card.holo.tilt .card-foil { opacity: .5; }
+@keyframes holoShift { to { background-position: 0 0, 400% 400%; } }
+.holo-tag { position: absolute; z-index: 5; right: 5cqw; top: 19.5cqw; padding: .5cqw 2cqw; border-radius: 2cqw; font: 900 3cqw var(--ui); letter-spacing: .12em; color: #1a0d2e;
+  background: linear-gradient(90deg, #ffb3e6, #fff3a8, #b3fff0, #b3d9ff, #e0b3ff); box-shadow: 0 .4cqw 1.2cqw rgba(0, 0, 0, .4); }
+.badge-holo { left: -6px; bottom: -6px; background: linear-gradient(90deg, #ff6fd0, #ffd93b, #5fffc8, #4aa8ff); color: #1a0d2e; letter-spacing: .06em; }
+.flip.tease-holo .card-back { box-shadow: 0 0 20px #ff6fd0, 0 0 30px #7ef0ff; }
+.tagholo { font: 900 11px var(--ui); color: #1a0d2e; background: linear-gradient(90deg, #ffb3e6, #fff3a8, #b3fff0, #b3d9ff); padding: 2px 8px; border-radius: 999px; margin-right: 4px; }
+.sum-row { grid-template-columns: 52px 1fr auto auto; }
+@media (min-width: 901px) { .stats { grid-template-columns: repeat(6, 1fr); } }
+
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; } }
 
 /* header fit at medium widths */

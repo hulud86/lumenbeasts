@@ -75,6 +75,10 @@ Every card is 5:7 (the real trading-card ratio) and built from one HTML/CSS comp
 
 The full-art scenes are made by `tallSvg()` in `js/art.js`. Each element has its own sky (a volcano sun with ash, light shafts underwater, hanging vines, thunderheads, a huge moon with bats, a galaxy, aurora curtains, canyon cliffs, cloud streams, floating rune circles) and its own foreground. Painted art for these cards can be supplied per creature with `tallImg`.
 
+**Holo variants:** any card, at any rarity, has a 5% chance to come out of a pack as a **Holo** version (set by `holoChance` in `js/config.js`). That works out to about 40% of packs having at least one. Holos get an animated rainbow foil with glitter that follows the pointer, a ✦ HOLO tag, and a burst of rainbow particles when revealed. They're tracked separately (`holo` in the save), with a "Holo only" filter, a Standard/Holo switch in the card viewer, and two awards (first Holo; 10 different Holos).
+
+**Dragon body styles:** classic winged (Pyrrhavex), crystal sovereign (Aurelith), long wingless Eastern-style storm dragon (Kaelzar), perched on a moon (Nocthyrr), baby in an eggshell (Cindrake), wingless drake with a meadow on its back (Mossdrake), two-legged wyvern breathing frost (Hrimvald), feathered sky dragon (Aerovant).
+
 **Built so these can be added later:** alternate art (point a creature at a different image), special foil editions (a new CSS class that reuses the holo layer), and new sets (the set name and collector numbers come from config).
 
 **Card back:** gold frame, indigo starburst, glowing moon-shard emblem, LUMEN BEASTS wordmark.

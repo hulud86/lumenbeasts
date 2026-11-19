@@ -21,6 +21,7 @@ window.CONFIG = {
   },
 
   dailyCooldownHours: 24,
+  holoChance: 0.05,              // chance that any card in a pack is a Holo version
   devTools: true,                // shows "grant test pack" in Settings — set false before launch
   welcomePacks: 3,               // bonus packs granted on a brand-new save
 

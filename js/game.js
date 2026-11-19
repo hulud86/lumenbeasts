@@ -28,7 +28,7 @@ window.Game = (function () {
   function hash(str) { let h = 2166136261; for (let i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); } return (h >>> 0).toString(36); }
   function fresh() {
     return { v: 1, created: Date.now(), owned: {}, firstSeen: {}, recent: [], packsOpened: 0, dailyClaims: 0, lastDaily: 0,
-      bonusPacks: C.welcomePacks, dust: 0, pulled: {}, achievements: {}, lastSeen: Date.now(), sound: true };
+      bonusPacks: C.welcomePacks, dust: 0, pulled: {}, holo: {}, achievements: {}, lastSeen: Date.now(), sound: true };
   }
   let S = null, storageOK = true, tampered = false;
   function load() {
@@ -86,6 +86,8 @@ window.Game = (function () {
       if (c.isNew) { S.firstSeen[id] = now; S.recent.unshift(id); }
       else { c.dust = C.dustPerDuplicate[c.creature.rarity] || 0; dust += c.dust; }
       S.pulled[c.creature.rarity] = (S.pulled[c.creature.rarity] || 0) + 1;
+      c.holo = rand() < (C.holoChance || 0);
+      if (c.holo) { c.newHolo = !S.holo[id]; S.holo[id] = (S.holo[id] || 0) + 1; }
     }
     S.recent = S.recent.slice(0, 24);
     S.dust += dust;
@@ -101,6 +103,7 @@ window.Game = (function () {
 
   /* ---------- collection helpers ---------- */
   const discovered = () => Object.keys(S.owned).length;
+  const holoCount = () => Object.keys(S.holo || {}).length;
   const totalCards = () => Object.values(S.owned).reduce((a, b) => a + b, 0);
   const completion = () => discovered() / ALL.length;
   const ownedOf = filter => ALL.filter(c => filter(c) && S.owned[c.id]).length;
@@ -123,6 +126,8 @@ window.Game = (function () {
     { id: "packs-10", name: "Pack Rat", desc: "Open 10 Shard Packs.", icon: "pack", goal: 10, prog: () => S.packsOpened, reward: { dust: 50 } },
     { id: "packs-50", name: "Shard Hoarder", desc: "Open 50 Shard Packs.", icon: "pack", goal: 50, prog: () => S.packsOpened, reward: { packs: 3 } },
     { id: "daily-7", name: "Moonlit Devotion", desc: "Claim 7 daily packs.", icon: "moon", goal: 7, prog: () => S.dailyClaims, reward: { packs: 2 } },
+    { id: "holo-1", name: "Prismatic!", desc: "Pull your first Holo card.", icon: "gem", goal: 1, prog: holoCount, reward: { packs: 1 } },
+    { id: "holo-10", name: "Rainbow Collector", desc: "Own 10 different Holo cards.", icon: "star", goal: 10, prog: holoCount, reward: { packs: 2, dust: 100 } },
     { id: "copies-5", name: "Best Friends", desc: "Own 5 copies of one creature.", icon: "heart", goal: 5, prog: () => Math.max(0, ...Object.values(S.owned)), reward: { dust: 40 } }
   ];
   const achStatus = a => { const p = Math.min(a.goal, a.prog()); return { p, done: p >= a.goal, claimed: !!S.achievements[a.id] }; };
@@ -159,6 +164,6 @@ window.Game = (function () {
     get state() { return S; }, get storageOK() { return storageOK; }, get tampered() { return tampered; },
     ALL, byId, pools, ACH, achStatus, claim, claimable,
     dailyReady, msUntilDaily, packsAvailable, clockRolledBack, openPack, buyPackWithDust,
-    discovered, totalCards, completion, ownedOf, exportCode, importCode, reset, grantTestPack, save, simulate, generatePack
+    discovered, holoCount, totalCards, completion, ownedOf, exportCode, importCode, reset, grantTestPack, save, simulate, generatePack
   };
 })();
