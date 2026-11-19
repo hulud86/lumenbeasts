@@ -11,10 +11,13 @@ window.CONFIG = {
   // Pack composition: fixed slots, then "special" slots rolled on specialWeights
   pack: {
     slots: [
-      { rarity: "common", count: 6 },
+      { rarity: "common", count: 5 },
       { rarity: "uncommon", count: 3 },
+      { rarity: "support", count: 1 },   // an Ally or Item card
       { rarity: "special", count: 1 }
     ],
+    supportWeights: { common: 60, uncommon: 28, rare: 10, epic: 2 },
+    supportAllyChance: 0.25,          // otherwise the support card is an Item
     // Probability for the special slot (any numbers — they're normalized)
     specialWeights: { common: 60, uncommon: 25, rare: 10, epic: 4, mythic: 1 },
     noDuplicatesWithinPack: true
@@ -24,6 +27,7 @@ window.CONFIG = {
   holoChance: 0.05,              // chance that any card in a pack is a Holo version
   devTools: true,                // shows "grant test pack" in Settings — set false before launch
   welcomePacks: 3,               // bonus packs granted on a brand-new save
+  starterSupport: ["A01", "I01", "I02"],   // Elowen, Healing Draught, Ember Bomb
 
   // Shard Dust earned for each duplicate copy, and the price of a bonus pack
   dustPerDuplicate: { common: 2, uncommon: 5, rare: 15, epic: 40, mythic: 150 },

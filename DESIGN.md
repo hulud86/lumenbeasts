@@ -148,7 +148,25 @@ The illustration engine has 14 body plans (blob, quadruped, serpent, bird, drago
 
 All 120 are written and playable: names, stats, abilities, personalities and descriptions.
 
-## 7. Technical plan
+## 7. Allies, Items and battles
+
+**Allies (12)** are original characters from Vael, one leader for each isle plus a healer and a tactician:
+Elowen (Grove Ranger), Coralie (Reef Captain), Brann (Forge Smith), Pip (Storm Chaser), Sable (Night Warden), Astrid (Stargazer), Torvi (Glacier Guide), Mara (Canyon Miner), Kestrel (Sky Racer), Quill (Archivist), Sister Sefa (Wandering Healer), Commander Rowan (Isle Tactician). Each has a **passive** boost (usually +ATK for creatures of their element) and a **Command** usable once per battle.
+
+**Items (12):** Healing Draught, Ember Bomb, Frost Flask, Lucky Charm, Cleansing Salts, Greater Draught, Smoke Veil, Shard Battery, Iron Tonic, Phoenix Feather, Fury Elixir, Moonstone Elixir. Each can be used **once per battle** and is **never used up** from the collection.
+
+**Getting them:** one card in every pack is a Support card (75% Item, 25% Ally; rarity 60/28/10/2). New players start with Elowen, a Healing Draught and an Ember Bomb.
+
+**Battle rules**
+- Team: 3 creatures + 1 Ally + up to 2 Items.
+- Turn options: Attack, Ability (3-turn recharge), Item, Ally Command, Swap (uses your turn; free after a faint).
+- HP = 62 + 1.05 × DEF + a rarity bonus. Damage = ATK × power × 100/(100+DEF) × matchup, with a small random spread and a 6% critical chance (1.5×).
+- Element wheel: each element beats two others (1.5×) and is weak to two (0.67×).
+- 12 ability effects: power, burn, buff, heal, shield, drain, weaken, stun, freeze, double, dodge, pierce. Every creature has one, and its card text describes it exactly.
+
+**Story mode:** 10 isles × (2 trainers + the isle's leader + the isle's guardian). Enemy strength rises gently from ×0.70 to about ×1.12, and later opponents bring Rare and Epic creatures. First wins pay Shard Dust; leaders add a pack and guardians add 2. `node tools/balance.js` simulates players with different collection sizes against every stage.
+
+## 8. Technical plan
 
 **Stack:** plain HTML, CSS and JavaScript. No framework, no build step, no server, no paid services.
 
@@ -158,6 +176,8 @@ All 120 are written and playable: names, stats, abilities, personalities and des
 | `css/style.css` | All visuals: the card system, rarity effects, layout, animation |
 | `js/config.js` | **Every tunable number:** name, pack slots, drop rates, cooldown, Dust values, welcome packs, rarity and element colors |
 | `js/creatures.js` | The roster. Add a creature with one line |
+| `js/support.js` | Allies and Items |
+| `js/battle.js` | Battle rules, opponent AI, story mode and the Battle tab |
 | `js/art.js` | Illustration engine: hand-drawn Founders + procedural creatures + silhouettes |
 | `js/game.js` | Rules: saving, daily timer, pack generation, achievements (no UI code) |
 | `js/ui.js` | Screens, routing (`#home`, `#packs`…), animations, sound |

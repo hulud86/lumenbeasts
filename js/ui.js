@@ -30,11 +30,12 @@
     star: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="m12 3 2.7 5.8 6.3.7-4.7 4.3 1.3 6.2L12 17l-5.6 3 1.3-6.2L3 9.5l6.3-.7Z"/></svg>',
     moon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5Z"/></svg>',
     heart: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 20s-7-4.4-9-9a4.8 4.8 0 0 1 9-3 4.8 4.8 0 0 1 9 3c-2 4.6-9 9-9 9Z"/></svg>',
+    battle: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 17.5 3 6V3h3l11.5 11.5M13 19l6-6M16 16l4 4M19 21l2-2"/><path d="M9.5 17.5 21 6V3h-3L6.5 14.5M11 19l-6-6M8 16l-4 4M5 21l-2-2"/></svg>',
     pack: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><rect x="5" y="2.5" width="14" height="19" rx="2"/><path d="M12 9l2 3-2 3-2-3Z"/></svg>',
     shard: '<svg viewBox="0 0 32 32"><path d="M16 2 L25 13 L19 30 L13 30 L7 13Z" fill="#ffd27a" stroke="#7ef0ff" stroke-width="1.5"/><path d="M16 2 L16 30 M7 13 L16 17 L25 13" stroke="#fff" stroke-width=".8" opacity=".7" fill="none"/></svg>'
   };
-  const NAV = [["home", "Home"], ["packs", "Open Packs"], ["collection", "My Collection"], ["encyclopedia", "Encyclopedia"], ["achievements", "Achievements"]];
-  const SHORT = { home: "Home", packs: "Packs", collection: "Collection", encyclopedia: "Encyclopedia", achievements: "Awards" };
+  const NAV = [["home", "Home"], ["packs", "Open Packs"], ["battle", "Battle"], ["collection", "My Collection"], ["encyclopedia", "Encyclopedia"], ["achievements", "Achievements"]];
+  const SHORT = { home: "Home", packs: "Packs", battle: "Battle", collection: "Cards", encyclopedia: "Guide", achievements: "Awards" };
 
   /* ---------- sound (tiny WebAudio synth, no files) ---------- */
   const Sfx = (() => {
@@ -84,6 +85,24 @@
 </div><div class="card-shine"></div><div class="card-holo"></div><div class="card-spark"></div>${o.holo ? `<div class="card-foil"></div><span class="holo-tag">✦ HOLO</span>` : ""}</div>
 ${o.count > 1 ? `<span class="card-badge badge-count">×${o.count}</span>` : ""}${o.holoCount ? `<span class="card-badge badge-holo">✦ Holo${o.holoCount > 1 ? " ×" + o.holoCount : ""}</span>` : ""}${o.isNew ? `<span class="card-badge badge-new">NEW</span>` : ""}
 </div>`;
+  }
+  const SUP = window.SUPPORT;
+  function passiveText(a) { const p = a.passive, parts = []; if (p.atk) parts.push(`+${p.atk}% Attack`); if (p.def) parts.push(`+${p.def}% Defense`); if (p.hp) parts.push(`+${p.hp}% HP`); return `${p.el ? EL[p.el].label : "All"} creatures get ${parts.join(" and ")}.`; }
+  function supportCardHTML(s, o = {}) {
+    const e = EL[s.element] || { main: "#c9a0ff", dark: "#3a2a6a", label: "Any" };
+    const ally = s.kind === "ally";
+    if (o.known === false) return `<div class="card mystery s-card k-${s.kind}" data-sid="${s.id}" style="--el:${e.main};--el-dark:${e.dark}"><div class="card-body"><div class="card-frame">
+<div class="card-head"><span class="card-name">???</span><span class="kind-badge">${ally ? "ALLY" : "ITEM"}</span></div><div class="card-art"><img src="${Art.uri(s)}" alt="" style="filter:brightness(0);opacity:.6"></div>
+<div class="card-type"><span class="species">${ally ? "Ally" : "Item"} · Unknown</span>${gems(s.rarity)}</div><div class="card-text"><span class="q">?</span></div><div class="card-foot"><span></span><span class="set-code">${esc(C.setName)} · ${s.id}</span><span></span></div></div></div></div>`;
+    return `<div class="card s-card k-${s.kind} r-${s.rarity}${o.tilt ? " tilt" : ""}" data-sid="${s.id}" style="--el:${e.main};--el-dark:${e.dark}">
+<div class="card-body"><div class="card-frame">
+<div class="card-head"><span class="card-name">${esc(s.name)}</span><span class="kind-badge">${ally ? "ALLY" : "ITEM"}</span></div>
+<div class="card-art"><img src="${Art.uri(s)}" alt="${esc(s.name)}" loading="lazy" draggable="false"><span class="card-no">${s.id}</span></div>
+<div class="card-type"><span class="species">${ally ? `${s.element ? EL[s.element].label + " · " : ""}${esc(s.role)}` : `Item · ${esc(s.type)}`}</span>${gems(s.rarity)}</div>
+<div class="card-text">${ally ? `<div class="card-ab"><b>Passive</b> — ${esc(passiveText(s))}</div><div class="card-ab"><b>${esc(s.command.name)}</b> — ${esc(s.command.text)}</div>` : `<div class="card-ab"><b>Effect</b> — ${esc(s.text)}</div><p class="card-flavor">${esc(s.desc)}</p>`}</div>
+<div class="card-foot"><span class="kind-foot">${ally ? "✦ Ally" : "✦ Item"}</span><span class="set-code">${esc(C.setName)} · ${s.id}</span><span class="kind-foot">${ally ? "1 per battle" : "Once per battle"}</span></div>
+</div><div class="card-shine"></div></div>
+${o.count > 1 ? `<span class="card-badge badge-count">×${o.count}</span>` : ""}${o.isNew ? `<span class="card-badge badge-new">NEW</span>` : ""}</div>`;
   }
   const backHTML = () => `<div class="card-back"><div class="card-back-in">${I.shard}<span class="bw">${esc(C.gameName.toUpperCase())}</span></div></div>`;
   function packHTML(label) {
@@ -189,8 +208,8 @@ ${first ? `<p class="locked-note" style="margin-top:12px;font-size:13px">First d
 
   /* ---------- views ---------- */
   let current = "home", session = null;
-  const filters = { q: "", el: "all", rar: "all", sort: "id", missing: false, holo: false };
-  const dexState = { q: "", el: "all", sel: 1 };
+  const filters = { q: "", el: "all", rar: "all", sort: "id", missing: false, holo: false, tab: "creatures" };
+  const dexState = { q: "", el: "all", sel: 1, tab: "creatures" };
 
   function viewHome() {
     const S = G.state, d = G.discovered(), tot = G.ALL.length, pct = Math.round(d / tot * 100);
@@ -210,6 +229,7 @@ ${!G.storageOK ? `<div class="notice">Your browser is blocking local storage (pr
     <p>${d ? `When the moon Lumen shattered, every shard that fell awoke a beast of light: the Lumen Beasts. You've found <b>${d}</b> of ${tot}.` : `When the moon Lumen shattered, every shard that fell awoke a beast of light: the Lumen Beasts. Open your welcome packs to start your collection.`}</p>
     <div class="hero-actions">
       <a class="btn btn-gold" href="#packs" ${packs ? "" : 'aria-disabled="true"'}>${packs ? "Open a Shard Pack" : "View packs"}</a>
+      <a class="btn btn-ghost" href="#battle">⚔ Battle</a>
       <span class="timer">${ready ? "Free pack: <b>Ready</b>" : `Next free pack in <b data-countdown>${fmt(G.msUntilDaily())}</b>`}</span>
     </div>
   </div>
@@ -237,7 +257,7 @@ ${recent.length ? `<div class="grid small">${recent.map(cr => cardHTML(cr, { cou
     const packs = G.packsAvailable(), S = G.state, canBuy = S.dust >= C.dustPackCost;
     const w = C.pack.specialWeights, wt = Object.values(w).reduce((a, b) => a + b, 0);
     return `<div class="pack-stage">
-<div><h1 class="h-display">Open Shard Packs</h1><p class="sub" style="margin:0">Each pack holds 6 Common, 3 Uncommon and 1 bonus card that could be anything up to Mythic.</p></div>
+<div><h1 class="h-display">Open Shard Packs</h1><p class="sub" style="margin:0">Each pack holds 5 Common and 3 Uncommon creatures, 1 Ally or Item, and 1 bonus creature that could be anything up to Mythic.</p></div>
 ${packHTML(packs ? `${packs} PACK${packs > 1 ? "S" : ""} READY` : "NO PACKS")}
 ${packs ? `<button class="btn btn-gold" id="btnOpen">Tear it open</button><div class="hint">Or tap the pack</div>`
           : `<div class="timer">Next free pack in <b data-countdown>${fmt(G.msUntilDaily())}</b></div>`}
@@ -250,7 +270,7 @@ ${packs ? `<button class="btn btn-gold" id="btnOpen">Tear it open</button><div c
   }
   function oddsHTML() {
     const w = C.pack.specialWeights, wt = Object.values(w).reduce((a, b) => a + b, 0);
-    return `<div class="settings"><h2>Pack odds</h2><p>Every pack holds 10 cards: ${C.pack.slots.map(s => `${s.count} ${s.rarity === "special" ? "bonus" : RAR[s.rarity].label}`).join(", ")}. The bonus card rolls on these chances:</p>
+    return `<div class="settings"><h2>Pack odds</h2><p>Every pack holds 10 cards: ${C.pack.slots.map(s => `${s.count} ${s.rarity === "special" ? "bonus creature" : s.rarity === "support" ? "Ally or Item" : RAR[s.rarity].label}`).join(", ")}. The bonus card rolls on these chances:</p>
 <div class="summary-stats">${Object.entries(w).map(([k, v]) => `<div class="rchip" style="--rc:${RAR[k].color}"><div class="t">${RAR[k].label}</div><div class="v">${(v / wt * 100).toFixed(v / wt < .1 ? 1 : 0)}%</div></div>`).join("")}</div>
 <p>Any card can also come out as a <b>Holo</b> version (${Math.round((C.holoChance || 0) * 100)}% chance per card, about ${Math.round((1 - Math.pow(1 - (C.holoChance || 0), 10)) * 100)}% of packs have at least one). Holos are tracked separately in your collection.</p><p>No creature appears twice in the same pack. Duplicate copies across packs give Shard Dust: ${Object.entries(C.dustPerDuplicate).map(([k, v]) => `${RAR[k].label} ${v}`).join(" · ")}.</p></div>`;
   }
@@ -262,7 +282,7 @@ ${packs ? `<button class="btn btn-gold" id="btnOpen">Tear it open</button><div c
 <div class="reveal-bar">${allOpen ? `<button class="btn btn-gold" id="btnSummary">See results</button>` : `<button class="btn btn-gold" id="btnRevealAll">Reveal all</button>`}</div>
 <div class="reveal-grid">${s.cards.map((c, i) => {
       const r = c.creature.rarity, open = s.opened.has(i);
-      return `<div class="flip ${open ? "open" : ""} r-${r} ${["rare", "epic", "mythic"].includes(r) ? "tease-" + r : ""}${c.holo ? " tease-holo" : ""}" data-i="${i}" style="--i:${i}"><div class="flip-in">${cardHTML(c.creature, { isNew: c.isNew && open, holo: c.holo })}${backHTML()}</div></div>`;
+      return `<div class="flip ${open ? "open" : ""} r-${r} ${["rare", "epic", "mythic"].includes(r) ? "tease-" + r : ""}${c.holo ? " tease-holo" : ""}" data-i="${i}" style="--i:${i}"><div class="flip-in">${c.support ? supportCardHTML(c.creature, { isNew: c.isNew && open }) : cardHTML(c.creature, { isNew: c.isNew && open, holo: c.holo })}${backHTML()}</div></div>`;
     }).join("")}</div></div>`;
   }
 
@@ -287,8 +307,22 @@ ${packs ? `<button class="btn btn-gold" id="btnOpen">Tear it open</button><div c
       (list.length ? `<div class="grid">${list.map(c => cardHTML(c, { known: !!S.owned[c.id], count: S.owned[c.id], holo: !!(S.holo || {})[c.id], holoCount: (S.holo || {})[c.id] })).join("")}</div>`
         : `<div class="panel empty">${G.discovered() ? "No cards match these filters." : 'Your binder is empty. <a href="#packs">Open your first pack</a>.'}</div>`);
   }
+  function tabsHTML(attr, cur) {
+    const S = G.state, na = SUP.allies.filter(x => S.support[x.id]).length, ni = SUP.items.filter(x => S.support[x.id]).length;
+    return `<div class="ktabs">${[["creatures", `Creatures <small>${G.discovered()}/${G.ALL.length}</small>`], ["allies", `Allies <small>${na}/${SUP.allies.length}</small>`], ["items", `Items <small>${ni}/${SUP.items.length}</small>`]].map(([k, l]) => `<button class="ktab ${cur === k ? "on" : ""}" data-${attr}="${k}">${l}</button>`).join("")}</div>`;
+  }
+  function supportGridHTML(list, showMissing) {
+    const S = G.state;
+    const shown = list.filter(x => showMissing || S.support[x.id]);
+    return shown.length ? `<div class="grid">${shown.map(x => supportCardHTML(x, { known: !!S.support[x.id], count: S.support[x.id] })).join("")}</div>` : `<div class="panel empty">None yet. Every pack has one Ally or Item card.</div>`;
+  }
   function viewCollection() {
-    return `<h1 class="h-display">My Collection</h1><p class="sub">Every creature you've pulled, with how many copies you own. Tap a card to inspect it.</p>
+    if (filters.tab !== "creatures") {
+      const list = filters.tab === "allies" ? SUP.allies : SUP.items;
+      return `<h1 class="h-display">My Collection</h1><p class="sub">${filters.tab === "allies" ? "Allies join you in battle. Each gives a passive boost and a one-time Command." : "Items can each be used once per battle, and you never lose them."} Every pack has one Ally or Item card.</p>${tabsHTML("ctab", filters.tab)}
+<div class="toolbar panel"><label class="toggle"><input type="checkbox" id="fmiss" ${filters.missing ? "checked" : ""}> Show missing</label></div><div id="collGrid">${supportGridHTML(list, filters.missing)}</div>`;
+    }
+    return `<h1 class="h-display">My Collection</h1>${tabsHTML("ctab", filters.tab)}<p class="sub">Every creature you've pulled, with how many copies you own. Tap a card to inspect it.</p>
 <div class="toolbar panel">
 <input class="search" id="fq" type="search" placeholder="Search by name, ability or #number" value="${esc(filters.q)}" aria-label="Search">
 <select class="select" id="frar" aria-label="Rarity"><option value="all">All rarities</option>${Object.entries(RAR).map(([k, r]) => `<option value="${k}" ${filters.rar === k ? "selected" : ""}>${r.label}</option>`).join("")}</select>
@@ -309,8 +343,25 @@ ${chipsHTML(filters, "el")}
 <span class="no">#${pad(c.id)}</span></button>`; }).join("") || `<div class="empty">No entries match.</div>`;
   }
   function dexDetailHTML() { const cr = G.byId[dexState.sel]; return `<div class="dex-detail panel">${cardHTML(cr, { known: !!G.state.owned[cr.id], tilt: true })}${detailHTML(cr)}</div>`; }
+  function supDetailHTML(x) {
+    const owned = G.state.support[x.id] || 0;
+    if (!owned) return `<div class="detail"><div class="tags"><span class="tag">${x.id}</span><span class="tag rar" style="--rc:${RAR[x.rarity].color}">${RAR[x.rarity].label}</span></div><h2>Undiscovered</h2><p class="locked-note">You haven't found this ${x.kind === "ally" ? "Ally" : "Item"} yet. One Ally or Item comes in every pack.</p></div>`;
+    return `<div class="detail"><h2>${esc(x.name)}</h2><div class="title">${x.kind === "ally" ? esc(x.role) : "Item · " + esc(x.type)}</div>
+<div class="tags"><span class="tag">${x.id}</span>${x.element ? `<span class="tag">${Art.icon(x.element, 14)} ${EL[x.element].label}</span>` : ""}<span class="tag rar" style="--rc:${RAR[x.rarity].color}">${RAR[x.rarity].label}</span><span class="tag">Owned ×${owned}</span></div>
+<p class="desc">${esc(x.desc)}</p><div class="statgrid">${x.kind === "ally" ? `<div class="statbox"><div class="k">Passive</div><div class="v" style="font-size:15px">${esc(passiveText(x))}</div></div><div class="statbox"><div class="k">Command · once per battle</div><div class="v" style="font-size:15px">${esc(x.command.name)}</div><div style="font-size:13px;color:var(--muted);font-weight:700">${esc(x.command.text)}</div></div>`
+      : `<div class="statbox" style="grid-column:span 2"><div class="k">Effect · once per battle</div><div class="v" style="font-size:15px">${esc(x.text)}</div></div>`}</div></div>`;
+  }
+  function inspectSupport(id) { const x = SUP.byId[id]; openModal(`<div class="dex-detail inspect" style="padding:0;background:none;border:0">${supportCardHTML(x, { known: !!G.state.support[id], tilt: true })}${supDetailHTML(x)}</div>`); }
   function viewEncyclopedia() {
-    return `<h1 class="h-display">Encyclopedia</h1><p class="sub">All ${G.ALL.length} creatures of Set 1 · ${esc(C.setName)}. You've recorded ${G.discovered()}. Undiscovered entries stay hidden until you pull them.</p>
+    if (dexState.tab !== "creatures") {
+      const list = dexState.tab === "allies" ? SUP.allies : SUP.items, S = G.state;
+      if (!SUP.byId[dexState.sel] || SUP.byId[dexState.sel].kind !== (dexState.tab === "allies" ? "ally" : "item")) dexState.sel = list[0].id;
+      const rows = list.map(x => { const k = !!S.support[x.id]; return `<button class="dex-row ${k ? "" : "unknown"} ${dexState.sel === x.id ? "sel" : ""}" data-sdex="${x.id}" style="--rc:${k ? RAR[x.rarity].color : "#3a4068"}"><span class="dex-thumb"><img src="${Art.uri(x)}" alt="" ${k ? "" : 'style="filter:brightness(0);opacity:.6"'}></span><span><span class="nm">${k ? esc(x.name) : "???"}</span><span class="meta">${x.kind === "ally" ? esc(x.role) : esc(x.type)} · <span style="color:${RAR[x.rarity].color}">${RAR[x.rarity].label}</span></span></span><span class="no">${x.id}</span></button>`; }).join("");
+      const sel = SUP.byId[dexState.sel];
+      return `<h1 class="h-display">Encyclopedia</h1><p class="sub">The ${dexState.tab === "allies" ? "people of Vael who fight beside you" : "potions, gear and relics you can bring into battle"}.</p>${tabsHTML("dtab", dexState.tab)}
+<div class="dex"><div class="dex-list panel">${rows}</div><div class="dex-detail-wrap" id="dexDetail"><div class="dex-detail panel">${supportCardHTML(sel, { known: !!S.support[sel.id], tilt: true })}${supDetailHTML(sel)}</div></div></div>`;
+    }
+    return `<h1 class="h-display">Encyclopedia</h1>${tabsHTML("dtab", dexState.tab)}<p class="sub">All ${G.ALL.length} creatures of Set 1 · ${esc(C.setName)}. You've recorded ${G.discovered()}. Undiscovered entries stay hidden until you pull them.</p>
 <div class="toolbar panel"><input class="search" id="dq" type="search" placeholder="Search discovered names or #number" value="${esc(dexState.q)}" aria-label="Search encyclopedia">${chipsHTML(dexState, "dexel")}</div>
 <div class="dex"><div class="dex-list panel" id="dexList">${dexListHTML()}</div><div class="dex-detail-wrap" id="dexDetail">${dexDetailHTML()}</div></div>`;
   }
@@ -333,7 +384,7 @@ ${G.claimable() > 1 ? `<button class="btn btn-gold btn-sm" id="claimAll" style="
   }
 
   /* ---------- render & routing ---------- */
-  const VIEWS = { home: viewHome, packs: viewPacks, collection: viewCollection, encyclopedia: viewEncyclopedia, achievements: viewAchievements };
+  const VIEWS = { home: viewHome, packs: viewPacks, battle: () => window.BattleUI.view(), collection: viewCollection, encyclopedia: viewEncyclopedia, achievements: viewAchievements };
   function render() {
     view.innerHTML = VIEWS[current]();
     view.classList.remove("view-enter"); void view.offsetWidth; view.classList.add("view-enter");
@@ -388,7 +439,7 @@ ${G.claimable() > 1 ? `<button class="btn btn-gold btn-sm" id="claimAll" style="
     const best = [...s.cards].sort((a, b) => RAR[b.creature.rarity].order - RAR[a.creature.rarity].order)[0];
     const rows = [...s.cards].sort((a, b) => (b.isNew - a.isNew) || RAR[b.creature.rarity].order - RAR[a.creature.rarity].order).map(c => {
       const cr = c.creature, r = RAR[cr.rarity];
-      return `<div class="sum-row" data-inspect="${cr.id}" style="--rc:${r.color}"><span class="dex-thumb"><img src="${Art.uri(cr)}" alt=""></span><span><div class="nm">${esc(cr.name)}</div><div class="rr">${r.label}</div></span>${c.holo ? `<span class="tagholo">✦ HOLO</span>` : ""}${c.isNew ? `<span class="tagnew">NEW</span>` : `<span class="tagdup">×${c.count} · +${c.dust}</span>`}</div>`;
+      return `<div class="sum-row" ${c.support ? `data-sinspect="${cr.id}"` : `data-inspect="${cr.id}"`} style="--rc:${r.color}"><span class="dex-thumb"><img src="${Art.uri(cr)}" alt=""></span><span><div class="nm">${esc(cr.name)}</div><div class="rr">${r.label}</div></span>${c.holo ? `<span class="tagholo">✦ HOLO</span>` : ""}${c.isNew ? `<span class="tagnew">NEW</span>` : `<span class="tagdup">×${c.count} · +${c.dust}</span>`}</div>`;
     }).join("");
     const more = G.packsAvailable();
     openModal(`<div class="summary-head"><h2>Pack results</h2><p class="sub" style="margin:4px 0 0">Best pull: <b style="color:${RAR[best.creature.rarity].color}">${esc(best.creature.name)}</b> (${RAR[best.creature.rarity].label})</p></div>
@@ -424,7 +475,7 @@ ${C.devTools ? `<section><h3>Testing tools</h3><p>For development only. Turn off
     const t = e.target;
     if (t.closest("#btnOpen") || (t.closest("#thePack") && current === "packs")) { startOpen(); return; }
     const flip = t.closest(".flip");
-    if (flip && session) { const i = +flip.dataset.i; if (!session.opened.has(i)) revealCard(i); else inspect(session.cards[i].creature.id); return; }
+    if (flip && session) { const i = +flip.dataset.i; if (!session.opened.has(i)) revealCard(i); else { const c = session.cards[i]; c.support ? inspectSupport(c.creature.id) : inspect(c.creature.id); } return; }
     if (t.closest("#btnRevealAll")) { revealAll(); return; }
     if (t.closest("#btnSummary")) { showSummary(); return; }
     if (t.closest("#sumAgain")) { closeModal(); endSession(); render(); setTimeout(startOpen, 250); return; }
@@ -436,11 +487,16 @@ ${C.devTools ? `<section><h3>Testing tools</h3><p>For development only. Turn off
     if (t.closest("#claimAll")) { G.ACH.forEach(a => G.claim(a.id)); Sfx.play("claim"); toast("🏆", "All rewards claimed"); render(); return; }
     const ins = t.closest("[data-inspect]"); if (ins) { inspect(+ins.dataset.inspect); return; }
     const vw = t.closest("[data-view]"); if (vw) { const [vid, mode] = vw.dataset.view.split(":"); inspect(+vid, mode === "holo"); return; }
+    const sdx = t.closest("[data-sdex]");
+    if (sdx) { dexState.sel = sdx.dataset.sdex; if (window.matchMedia("(max-width: 900px)").matches) inspectSupport(dexState.sel); else render(); return; }
     const dx = t.closest("[data-dex]");
     if (dx) { dexState.sel = +dx.dataset.dex; if (window.matchMedia("(max-width: 900px)").matches) inspect(dexState.sel); else { $("#dexDetail").innerHTML = dexDetailHTML(); $$(".dex-row").forEach(r => r.classList.toggle("sel", +r.dataset.dex === dexState.sel)); } return; }
     const chip = t.closest("[data-el]"); if (chip) { filters.el = chip.dataset.el; render(); return; }
     const dchip = t.closest("[data-dexel]"); if (dchip) { dexState.el = dchip.dataset.dexel; render(); return; }
-    const card = t.closest(".card"); if (card && !t.closest(".modal") && !t.closest(".dex-detail")) { inspect(+card.dataset.id); return; }
+    const sins = t.closest("[data-sinspect]"); if (sins) { inspectSupport(sins.dataset.sinspect); return; }
+    const ctab = t.closest("[data-ctab]"); if (ctab) { filters.tab = ctab.dataset.ctab; render(); return; }
+    const dtab = t.closest("[data-dtab]"); if (dtab) { dexState.tab = dtab.dataset.dtab; dexState.sel = dtab.dataset.dtab === "creatures" ? 1 : (dtab.dataset.dtab === "allies" ? "A01" : "I01"); render(); return; }
+    const card = t.closest(".card"); if (card && !t.closest(".modal") && !t.closest(".dex-detail")) { if (card.dataset.sid) inspectSupport(card.dataset.sid); else inspect(+card.dataset.id); return; }
     // settings
     if (t.closest("#copyCode")) { const ta = $("#saveCode"); ta.select(); (navigator.clipboard ? navigator.clipboard.writeText(ta.value) : Promise.reject()).then(() => toast("✓", "Save code copied")).catch(() => { try { document.execCommand("copy"); toast("✓", "Save code copied"); } catch (er) { toast("!", "Select the code and copy it manually"); } }); return; }
     if (t.closest("#doImport")) { if (G.importCode($("#importCode").value)) { closeModal(); toast("✓", "Collection restored"); session = null; render(); } else toast("!", "That code didn't work", "Check you copied all of it"); return; }
@@ -454,7 +510,7 @@ ${C.devTools ? `<section><h3>Testing tools</h3><p>For development only. Turn off
     if (id === "setSound") { G.state.sound = e.target.checked; G.save(); }
     if (id === "frar") { filters.rar = e.target.value; $("#collGrid").innerHTML = collectionGrid(); }
     if (id === "fsort") { filters.sort = e.target.value; $("#collGrid").innerHTML = collectionGrid(); }
-    if (id === "fmiss") { filters.missing = e.target.checked; $("#collGrid").innerHTML = collectionGrid(); }
+    if (id === "fmiss") { filters.missing = e.target.checked; if (filters.tab !== "creatures") render(); else $("#collGrid").innerHTML = collectionGrid(); }
     if (id === "fholo") { filters.holo = e.target.checked; $("#collGrid").innerHTML = collectionGrid(); }
   });
   document.addEventListener("input", e => {
@@ -462,6 +518,8 @@ ${C.devTools ? `<section><h3>Testing tools</h3><p>For development only. Turn off
     if (e.target.id === "dq") { dexState.q = e.target.value; $("#dexList").innerHTML = dexListHTML(); }
   });
   document.addEventListener("keydown", e => { if ((e.key === "Enter" || e.key === " ") && e.target.closest && e.target.closest(".card,.flip") && !e.target.closest("input,textarea,button")) { e.preventDefault(); e.target.click(); } });
+
+  window.UI = { cardHTML, supportCardHTML, openModal, closeModal, toast, particles, flash, banner, Sfx, esc, render: () => render(), refreshChrome };
 
   // Persist "last seen" occasionally so clock-rollback detection works
   setInterval(() => G.save(), 60000);

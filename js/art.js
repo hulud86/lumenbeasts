@@ -10,6 +10,7 @@
   const E = window.CONFIG.elements;
 
   /* ---------- helpers ---------- */
+  const sid = cr => typeof cr.id === "number" ? cr.id : [...String(cr.id)].reduce((h, ch) => (h * 31 + ch.charCodeAt(0)) % 99991, 7) + 500;
   function rng(seed) {
     let a = seed * 2654435761 >>> 0;
     return function () {
@@ -980,10 +981,109 @@ ${eye(92, 48, 4.6, { glow: "#ffe27a", slit: true })}${eye(108, 48, 4.6, { glow: 
 ${glyph("celestial", 60, 128, .35, 0)}${glyph("celestial", 150, 46, .3, 0)}`
   };
 
+  /* ---------- people (Allies) and items ---------- */
+  function person(cr, p) {
+    const k = cr.look, line = "#2a1a2a", L = `stroke="${line}" stroke-width="2.2" stroke-linejoin="round"`;
+    const skin = k.skin, hc = k.hairC, oc = k.outfit;
+    const dark = shift(oc.length === 7 ? oc : "#444444", 0, 0, -14);
+    let back = "", front = "", hat = "", tool = "", extra = "";
+    // hair behind the head
+    if (k.hair === "long" || k.hair === "veil") back += `<path d="M78 66 C74 96 76 116 84 126 L116 126 C124 116 126 96 122 66Z" fill="${hc}" ${L}/>`;
+    if (k.hair === "braid") back += `<path d="M114 74 C124 88 122 104 128 118" stroke="${line}" stroke-width="10" fill="none" stroke-linecap="round"/><path d="M114 74 C124 88 122 104 128 118" stroke="${hc}" stroke-width="7" fill="none" stroke-linecap="round" stroke-dasharray="6 2"/><circle cx="128" cy="120" r="3" fill="${p.light}" ${L}/>`;
+    if (k.hair === "ponytail") back += `<path d="M110 58 C130 56 136 74 130 92 C126 80 120 70 110 66Z" fill="${hc}" ${L}/>`;
+    if (k.hair === "bun") back += `<circle cx="100" cy="46" r="10" fill="${hc}" ${L}/>`;
+    if (k.cape) back += `<path d="M80 96 C70 112 66 130 64 144 L136 144 C134 130 130 112 120 96Z" fill="#8a1a2a" ${L}/>`;
+    // body
+    const body = `<path d="M82 96 C78 112 76 128 74 142 L126 142 C124 128 122 112 118 96 C112 92 88 92 82 96Z" fill="${oc}" ${L}/>` +
+      `<path d="M92 96 L100 106 L108 96" fill="none" stroke="${shift(oc, 0, 0, 20)}" stroke-width="3"/><path d="M76 126 H124" stroke="${dark}" stroke-width="4" opacity=".6"/>` +
+      `<path d="M84 100 C76 108 74 116 76 122" stroke="${line}" stroke-width="10" fill="none" stroke-linecap="round"/><path d="M84 100 C76 108 74 116 76 122" stroke="${oc}" stroke-width="7" fill="none" stroke-linecap="round"/><circle cx="76" cy="123" r="4.5" fill="${skin}" ${L}/>` +
+      `<path d="M116 100 C124 106 128 110 132 110" stroke="${line}" stroke-width="10" fill="none" stroke-linecap="round"/><path d="M116 100 C124 106 128 110 132 110" stroke="${oc}" stroke-width="7" fill="none" stroke-linecap="round"/>` +
+      `<path d="M88 142 v4 M112 142 v4" stroke="${line}" stroke-width="6" stroke-linecap="round"/>`;
+    // tools held at ~ (133,110)
+    const T = {
+      bow: `<path d="M140 76 C156 96 156 124 140 144" stroke="#7a4a22" stroke-width="3.4" fill="none"/><path d="M140 76 L140 144" stroke="#eee" stroke-width="1"/>`,
+      spyglass: `<path d="M128 112 L156 90" stroke="${line}" stroke-width="9" stroke-linecap="round"/><path d="M128 112 L156 90" stroke="#d8a84a" stroke-width="6" stroke-linecap="round"/><path d="M148 96 l6 -5" stroke="#8a5a1a" stroke-width="7"/>`,
+      hammer: `<path d="M134 114 L150 80" stroke="#7a4a22" stroke-width="4" stroke-linecap="round"/><rect x="140" y="70" width="22" height="12" rx="2" fill="#8a8a9a" ${L} transform="rotate(25 151 76)"/>`,
+      rod: `<path d="M134 114 L146 64" stroke="#8a8a9a" stroke-width="3.4" stroke-linecap="round"/><path d="M146 62 l-5 8 l6 0 l-5 9" stroke="#fff6a8" stroke-width="2" fill="none" filter="url(#glow)"/>`,
+      lantern: `<path d="M134 112 L140 96" stroke="${line}" stroke-width="2"/><rect x="132" y="96" width="16" height="20" rx="4" fill="#3a2a4a" ${L}/><circle cx="140" cy="106" r="5" fill="#d6b8ff" filter="url(#glow)"/>`,
+      staff: `<path d="M134 140 L134 66" stroke="#c9b8ff" stroke-width="3.4" stroke-linecap="round"/><circle cx="134" cy="62" r="6" fill="#fff4d6" filter="url(#glow)"/>${glyph("celestial", 134, 62, .5, 0)}`,
+      staffheal: `<path d="M134 140 L134 66" stroke="#d8c8a0" stroke-width="3.4" stroke-linecap="round"/><path d="M134 54 v18 M125 63 h18" stroke="#5fd08a" stroke-width="5" stroke-linecap="round" filter="url(#glow)"/>`,
+      pick: `<path d="M134 114 L146 78" stroke="#7a4a22" stroke-width="3.4" stroke-linecap="round"/><path d="M136 76 C144 70 152 72 158 78" stroke="#bfe6f8" stroke-width="4" fill="none" stroke-linecap="round"/>`,
+      pickaxe: `<path d="M134 114 L148 78" stroke="#7a4a22" stroke-width="3.6" stroke-linecap="round"/><path d="M134 80 C142 70 156 70 164 80" stroke="#8a8a9a" stroke-width="5" fill="none" stroke-linecap="round"/>`,
+      kite: `<path d="M134 110 C150 96 152 70 160 50" stroke="#eee" stroke-width="1"/><path d="M160 30 L172 48 L160 70 L148 48Z" fill="#ff6a3d" ${L}/><path d="M160 30 V70 M148 48 H172" stroke="${line}" stroke-width="1"/>`,
+      book: `<path d="M126 104 L146 98 L148 118 L128 124Z" fill="#6a2a8a" ${L}/>${glyph("arcane", 137, 111, .35, 0)}`,
+      sword: `<path d="M134 112 L152 70" stroke="#e0e6f0" stroke-width="4" stroke-linecap="round"/><path d="M128 106 L140 112" stroke="#d8a84a" stroke-width="4" stroke-linecap="round"/>`
+    };
+    tool = T[k.tool] || "";
+    // head and face
+    const head = `<circle cx="100" cy="70" r="20" fill="${skin}" ${L}/>` +
+      eye(93, 72, 5, { iris: p.main === "#ffd93b" ? "#5a7a2a" : shift(p.main, 0, 0, -20), line }) + eye(107, 72, 5, { iris: p.main === "#ffd93b" ? "#5a7a2a" : shift(p.main, 0, 0, -20), line }) +
+      `<path d="M96 81 Q100 84 104 81" stroke="${line}" stroke-width="1.6" fill="none"/><ellipse cx="88" cy="78" rx="3.2" ry="2" fill="#ff8aa0" opacity=".5"/><ellipse cx="112" cy="78" rx="3.2" ry="2" fill="#ff8aa0" opacity=".5"/>` +
+      (k.beard ? `<path d="M84 76 C86 94 114 94 116 76 C110 84 90 84 84 76Z" fill="${hc}" ${L}/>` : "") +
+      (k.glasses ? `<circle cx="93" cy="72" r="6.5" fill="none" stroke="${line}" stroke-width="1.6"/><circle cx="107" cy="72" r="6.5" fill="none" stroke="${line}" stroke-width="1.6"/><path d="M99.5 72 h1" stroke="${line}" stroke-width="1.6"/>` : "");
+    // hair in front
+    const F = {
+      braid: `<path d="M80 66 C80 50 120 48 120 66 C112 58 96 58 80 66Z" fill="${hc}" ${L}/>`,
+      short: `<path d="M80 68 C78 48 122 46 120 68 C116 60 108 56 100 60 C92 56 84 60 80 68Z" fill="${hc}" ${L}/>`,
+      spiky: `<path d="M80 66 L78 52 L86 56 L88 44 L96 52 L100 40 L106 52 L114 44 L114 56 L122 52 L120 66 C110 58 90 58 80 66Z" fill="${hc}" ${L}/>`,
+      long: `<path d="M80 72 C76 50 124 48 120 72 C114 58 104 56 98 60 C92 56 84 60 80 72Z" fill="${hc}" ${L}/>`,
+      bun: `<path d="M80 66 C80 48 120 48 120 66 C110 60 90 60 80 66Z" fill="${hc}" ${L}/>`,
+      ponytail: `<path d="M80 68 C78 50 120 48 120 66 C112 58 92 58 80 68Z" fill="${hc}" ${L}/>`,
+      windswept: `<path d="M80 68 C78 50 108 44 126 54 C120 54 118 58 122 62 C112 58 92 58 80 68Z" fill="${hc}" ${L}/>`,
+      bald: "", veil: ""
+    };
+    front = F[k.hair] || "";
+    const H = {
+      hood: `<path d="M76 74 C72 46 128 46 124 74 C118 58 82 58 76 74Z" fill="${dark}" ${L}/>`,
+      captain: `<path d="M78 56 C80 40 120 40 122 56Z" fill="#f4f4f4" ${L}/><path d="M74 56 H126 C126 62 74 62 74 56Z" fill="#1d2f53" ${L}/><circle cx="100" cy="48" r="4" fill="#d8a84a"/>`,
+      goggles: `<path d="M80 62 H120" stroke="#5a3a1a" stroke-width="4"/><circle cx="91" cy="60" r="6" fill="#bff3ff" ${L}/><circle cx="109" cy="60" r="6" fill="#bff3ff" ${L}/>`,
+      cowl: `<path d="M74 78 C70 44 130 44 126 78 C120 60 80 60 74 78Z" fill="#1a0d2e" ${L}/>`,
+      circlet: `<path d="M82 58 Q100 52 118 58" stroke="#ffd27a" stroke-width="3" fill="none"/>${glyph("celestial", 100, 54, .35, 0)}`,
+      furhat: `<path d="M78 60 C78 40 122 40 122 60Z" fill="#2a6aa0" ${L}/><path d="M76 60 C76 54 124 54 124 60 C124 66 76 66 76 60Z" fill="#f4f4f4" ${L}/><circle cx="100" cy="38" r="6" fill="#f4f4f4" ${L}/>`,
+      minerhelm: `<path d="M78 60 C78 40 122 40 122 60Z" fill="#e8b84a" ${L}/><path d="M74 60 H126" stroke="${line}" stroke-width="3"/><circle cx="100" cy="50" r="5" fill="#fff6a8" filter="url(#glow)"/>`,
+      aviator: `<path d="M78 64 C76 44 124 44 122 64 C116 56 84 56 78 64Z" fill="#7a4a22" ${L}/><circle cx="90" cy="56" r="5" fill="#bff3ff" ${L}/><circle cx="110" cy="56" r="5" fill="#bff3ff" ${L}/><path d="M118 62 C130 64 136 72 134 82" stroke="#fff" stroke-width="3" fill="none"/>`,
+      wizard: `<ellipse cx="100" cy="56" rx="28" ry="6" fill="#2a0f4a" ${L}/><path d="M86 54 C88 36 96 22 108 14 C108 26 112 40 114 54Z" fill="#4a1a7a" ${L}/>${glyph("arcane", 102, 40, .35, 0)}`,
+      veil: `<path d="M76 92 C70 60 78 46 100 46 C122 46 130 60 124 92 C118 72 112 60 100 60 C88 60 82 72 76 92Z" fill="${hc}" ${L}/>`,
+      beret: `<path d="M78 58 C76 44 120 40 124 54 C118 60 90 62 78 58Z" fill="#8a1a2a" ${L}/><circle cx="104" cy="44" r="2.5" fill="#d8a84a"/>`
+    };
+    hat = H[k.hat] || "";
+    return `<ellipse cx="100" cy="146" rx="32" ry="5" fill="#000" opacity=".3"/>` + back + body + tool + head + front + hat + extra;
+  }
+  function itemArt(cr, p) {
+    const k = cr.look, c = k.color, L = `stroke="#3a2410" stroke-width="2.4" stroke-linejoin="round"`, line = "#3a2410";
+    const glass = `<radialGradient id="liq" cx=".35" cy=".35" r=".8"><stop offset="0" stop-color="${shift(c, 0, 0, 25)}"/><stop offset=".6" stop-color="${c}"/><stop offset="1" stop-color="${shift(c, 0, 0, -22)}"/></radialGradient>`;
+    const shine = (x, y) => `<ellipse cx="${x}" cy="${y}" rx="5" ry="10" fill="#fff" opacity=".55" transform="rotate(20 ${x} ${y})"/>`;
+    const cork = (y) => `<rect x="92" y="${y}" width="16" height="12" rx="3" fill="#b8865a" ${L}/>`;
+    const S = {
+      round: `<path d="M94 52 L106 52 L106 66 C124 72 132 88 128 104 C124 124 76 124 72 104 C68 88 76 72 94 66Z" fill="url(#liq)" ${L}/>` + cork(42) + shine(86, 88),
+      tall: `<path d="M94 44 L106 44 L106 60 C114 64 118 70 118 80 L118 122 C118 128 82 128 82 122 L82 80 C82 70 86 64 94 60Z" fill="url(#liq)" ${L}/>` + cork(34) + shine(90, 90),
+      square: `<path d="M94 50 L106 50 L106 62 L120 70 L120 120 L80 120 L80 70 L94 62Z" fill="url(#liq)" ${L}/>` + cork(40) + `<path d="M86 80 H114" stroke="#fff" stroke-width="2" opacity=".5"/>`,
+      flask: `<path d="M94 48 L106 48 L106 70 L126 114 C128 120 72 120 74 114 L94 70Z" fill="url(#liq)" ${L}/>` + cork(38) + `<path d="M84 104 L116 104" stroke="#fff" stroke-width="2" opacity=".5"/>` + glyph("ice", 100, 96, .6, 0),
+      bomb: `<circle cx="100" cy="94" r="28" fill="#2a2a34" ${L}/><rect x="92" y="62" width="16" height="8" rx="2" fill="#5a5a6a" ${L}/><path d="M100 62 C100 50 112 48 114 40" stroke="#7a4a22" stroke-width="3" fill="none"/><g filter="url(#glow)">${glyph("fire", 116, 34, .8, 0)}</g>` + shine(88, 84),
+      charm: `<path d="M100 40 L124 70 L114 118 L86 118 L76 70Z" fill="url(#liq)" ${L} opacity=".9"/><g transform="translate(100 84)">${[0, 90, 180, 270].map(a => `<ellipse cx="0" cy="-9" rx="7" ry="9" fill="#5fd08a" stroke="#1a5a2a" stroke-width="1.6" transform="rotate(${a})"/>`).join("")}<circle r="3" fill="#fff6a8"/></g><path d="M100 118 V132" stroke="${line}" stroke-width="2"/>`,
+      jar: `<rect x="76" y="62" width="48" height="58" rx="10" fill="url(#liq)" ${L}/><rect x="72" y="52" width="56" height="14" rx="4" fill="#8a6a4a" ${L}/>` + [[88, 82], [104, 92], [96, 104], [112, 78]].map(([x, y]) => `<rect x="${x}" y="${y}" width="6" height="6" fill="#fff" opacity=".8" transform="rotate(45 ${x + 3} ${y + 3})"/>`).join(""),
+      pouch: `<path d="M80 74 C70 92 72 118 100 122 C128 118 130 92 120 74Z" fill="url(#liq)" ${L}/><path d="M84 74 C92 66 108 66 116 74" stroke="${line}" stroke-width="3" fill="none"/><path d="M84 68 C80 50 92 40 100 50 C106 36 124 42 118 56 C128 56 128 70 116 70" fill="#d6c4f4" opacity=".75" stroke="${line}" stroke-width="1.6"/>`,
+      crystal: `<path d="M100 36 L122 64 L114 124 L86 124 L78 64Z" fill="url(#liq)" ${L}/><path d="M100 36 V124 M78 64 L100 76 L122 64" stroke="#fff" stroke-width="1.4" opacity=".6" fill="none"/><g filter="url(#glow)">${glyph("electric", 100, 90, .9, 0)}</g>`,
+      feather: `<path d="M100 130 C80 104 82 60 112 34 C122 62 120 104 100 130Z" fill="url(#liq)" ${L}/><path d="M100 130 C102 100 106 70 112 36" stroke="${line}" stroke-width="2" fill="none"/>` + [50, 64, 78, 92, 106].map(y => `<path d="M${108 - (y - 50) * .1} ${y} l-14 6 M${108 - (y - 50) * .1} ${y} l10 8" stroke="${line}" stroke-width="1.2" opacity=".5"/>`).join("") + `<g filter="url(#glow)" opacity=".8">${glyph("fire", 118, 40, .6, 20)}</g>`,
+      moon: `<path d="M94 46 L106 46 L106 58 C126 64 134 84 128 102 C122 124 78 124 72 102 C66 84 74 64 94 58Z" fill="url(#liq)" ${L}/>` + cork(36) + `<path d="M104 78 A12 12 0 1 0 110 100 A9 9 0 1 1 104 78Z" fill="#fff4d6" filter="url(#glow)"/>`
+    };
+    return `<defs>${glass}</defs><circle cx="100" cy="86" r="52" fill="${c}" opacity=".25" filter="url(#blur)"/><ellipse cx="100" cy="134" rx="40" ry="6" fill="#3a2410" opacity=".3"/>` + (S[k.shape] || S.round) +
+      Array.from({ length: 6 }, (_, i) => glyph("celestial", 40 + (i * 37) % 120, 30 + (i * 53) % 100, .22, 0, .8)).join("");
+  }
+  function parchment() {
+    return `<radialGradient id="parch" cx=".5" cy=".45" r=".75"><stop offset="0" stop-color="#fbf1d8"/><stop offset=".7" stop-color="#e8d2a2"/><stop offset="1" stop-color="#b8945a"/></radialGradient>
+<rect width="200" height="160" fill="url(#parch)"/><circle cx="100" cy="86" r="58" fill="none" stroke="#a07a3a" stroke-width="1.2" opacity=".55"/><circle cx="100" cy="86" r="66" fill="none" stroke="#a07a3a" stroke-width=".8" stroke-dasharray="3 5" opacity=".55"/>
+<path d="M10 10 h24 M10 10 v24 M190 10 h-24 M190 10 v24 M10 150 h24 M10 150 v-24 M190 150 h-24 M190 150 v-24" stroke="#8a6a3a" stroke-width="2" opacity=".6"/>`;
+  }
+  function townScene(p, r) {
+    return `<linearGradient id="town" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2a3a7a"/><stop offset="1" stop-color="#e8a06a"/></linearGradient><rect width="200" height="160" fill="url(#town)"/>` +
+      `<path d="M0 116 L20 116 L20 92 L34 80 L48 92 L48 116 L62 116 L62 100 L80 100 L80 116 L130 116 L130 86 L146 72 L162 86 L162 116 L200 116 V160 H0Z" fill="#2a1f3a" opacity=".85"/>` +
+      [[28, 100], [140, 96], [152, 100], [70, 106]].map(([x, y]) => `<rect x="${x}" y="${y}" width="5" height="6" fill="#ffd27a"/>`).join("") + `<path d="M0 136 C60 128 140 130 200 136 V160 H0Z" fill="#1a1428"/>`;
+  }
   /* ---------- assembly ---------- */
   function palette(cr) {
-    const el = E[cr.element], r = rng(cr.id * 7 + 3);
-    const dh = cr.id <= 10 ? 0 : (r() - .5) * 36, dl = (r() - .5) * 10;
+    const el = E[cr.element] || { main: "#c9a0ff", light: "#f0e6ff", dark: "#3a2a6a", bg1: "#1a1440", bg2: "#4a3a8a" }, r = rng(sid(cr) * 7 + 3);
+    const dh = cr.kind || (typeof cr.id === "number" && cr.id <= 10) ? 0 : (r() - .5) * 36, dl = cr.kind ? 0 : (r() - .5) * 10;
     return {
       ...el,
       body: shift(el.main, dh, 0, dl), bodyLight: shift(el.light, dh, 0, 0), bodyDark: shift(el.main, dh, 0, dl - 22),
@@ -993,14 +1093,17 @@ ${glyph("celestial", 60, 128, .35, 0)}${glyph("celestial", 150, 46, .3, 0)}`
   }
   const cache = new Map();
   function inner(cr, p) {
-    const r = rng(cr.id), F = new Set(cr.feat || []);
+    if (cr.kind === "ally") return person(cr, p);
+    if (cr.kind === "item") return itemArt(cr, p);
+    const r = rng(sid(cr)), F = new Set(cr.feat || []);
     if (HAND[cr.id]) return HAND[cr.id](p);
     const sc = { common: .84, uncommon: .92, rare: 1, epic: 1.05, mythic: 1.08 }[cr.rarity];
     return `<g transform="translate(100 144) scale(${sc}) translate(-100 -144)">${(FORMS[cr.form] || FORMS.blob)(p, r, cr.element, F)}</g>`;
   }
   function svg(cr) {
     const p = palette(cr);
-    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 160">${defs(p)}${scene(cr.element, p, rng(cr.id * 13))}${aura(cr.rarity, p)}${inner(cr, p)}</svg>`;
+    const bg = cr.kind === "item" ? parchment() : cr.kind === "ally" && !cr.element ? townScene(p) : scene(cr.element, p, rng(sid(cr) * 13));
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 160">${defs(p)}${bg}${cr.kind ? "" : aura(cr.rarity, p)}${inner(cr, p)}</svg>`;
   }
   /* ---------- full-art "illustration" compositions for Rare+ (200 x 280) ---------- */
   const SKY = {
@@ -1049,8 +1152,8 @@ ${glyph("celestial", 60, 128, .35, 0)}${glyph("celestial", 150, 46, .3, 0)}`
     arcane: p => `<path d="M0 214 C60 206 140 208 200 214 V280 H0Z" fill="#14072a"/><ellipse cx="100" cy="218" rx="86" ry="14" fill="none" stroke="#ff9be3" stroke-width="1.6" opacity=".7" filter="url(#glow)"/>`
   };
   function tallSvg(cr) {
-    const p = palette(cr), R = rng(cr.id * 31 + 7), el = cr.element;
-    let sc = scene(el, p, rng(cr.id * 13)).replace('<rect width="200" height="160" fill="url(#sky)"/>', "");
+    const p = palette(cr), R = rng(sid(cr) * 31 + 7), el = cr.element;
+    let sc = scene(el, p, rng(sid(cr) * 13)).replace('<rect width="200" height="160" fill="url(#sky)"/>', "");
     if (el === "shadow") sc = sc.replace(/<circle cx="158" cy="38" r="22"[^>]*\/><circle cx="168" cy="32" r="20"[^>]*\/>/, "");
     return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 280">${defs(p)}<defs>
 <linearGradient id="tsky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${p.bg1}"/><stop offset=".6" stop-color="${p.bg2}"/><stop offset="1" stop-color="${p.bg1}"/></linearGradient>

@@ -3,7 +3,7 @@
    Save data, daily pack timer, pack generation, achievements.
    ========================================================= */
 window.Game = (function () {
-  const C = window.CONFIG, ALL = window.CREATURES;
+  const C = window.CONFIG, ALL = window.CREATURES, SUP = window.SUPPORT;
   const byId = Object.fromEntries(ALL.map(c => [c.id, c]));
   const RARITIES = Object.keys(C.rarities);
   const pools = Object.fromEntries(RARITIES.map(r => [r, ALL.filter(c => c.rarity === r)]));
@@ -26,9 +26,10 @@ window.Game = (function () {
 
   /* ---------- save / load ---------- */
   function hash(str) { let h = 2166136261; for (let i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); } return (h >>> 0).toString(36); }
+  function starterKit() { return Object.fromEntries((C.starterSupport || []).map(id => [id, 1])); }
   function fresh() {
     return { v: 1, created: Date.now(), owned: {}, firstSeen: {}, recent: [], packsOpened: 0, dailyClaims: 0, lastDaily: 0,
-      bonusPacks: C.welcomePacks, dust: 0, pulled: {}, holo: {}, achievements: {}, lastSeen: Date.now(), sound: true };
+      bonusPacks: C.welcomePacks, dust: 0, pulled: {}, holo: {}, support: starterKit(), battle: { cleared: {}, wins: 0, losses: 0, team: null }, achievements: {}, lastSeen: Date.now(), sound: true };
   }
   let S = null, storageOK = true, tampered = false;
   function load() {
@@ -38,6 +39,8 @@ window.Game = (function () {
         const { data, sig } = JSON.parse(raw);
         S = Object.assign(fresh(), data);
         tampered = sig !== hash(JSON.stringify(data) + SALT);
+        if (!data.support) S.support = starterKit();      // older saves get the starter kit
+        if (!data.battle) S.battle = { cleared: {}, wins: 0, losses: 0, team: null };
       } else S = fresh();
     } catch (e) { storageOK = false; S = fresh(); }
     return S;
@@ -61,6 +64,7 @@ window.Game = (function () {
     const cards = [], used = new Set();
     for (const slot of C.pack.slots) {
       for (let i = 0; i < slot.count; i++) {
+        if (slot.rarity === "support") { cards.push({ creature: rollSupport(), support: true }); continue; }
         const rarity = slot.rarity === "special" ? rollRarity(C.pack.specialWeights) : slot.rarity;
         let pool = pools[rarity];
         if (C.pack.noDuplicatesWithinPack) { const left = pool.filter(c => !used.has(c.id)); if (left.length) pool = left; }
@@ -69,6 +73,13 @@ window.Game = (function () {
       }
     }
     return cards;
+  }
+  function rollSupport() {
+    const pool = rand() < C.pack.supportAllyChance ? SUP.allies : SUP.items;
+    const order = ["epic", "rare", "uncommon", "common"];
+    let r = rollRarity(C.pack.supportWeights);
+    for (let i = order.indexOf(r); i < order.length; i++) { const p = pool.filter(x => x.rarity === order[i]); if (p.length) return pick(p); }
+    return pick(pool);
   }
   function openPack() {
     if (packsAvailable() <= 0) return null;
@@ -80,6 +91,11 @@ window.Game = (function () {
     const now = Date.now();
     for (const c of cards) {
       const id = c.creature.id;
+      if (c.support) {
+        c.isNew = !S.support[id]; S.support[id] = (S.support[id] || 0) + 1; c.count = S.support[id];
+        if (!c.isNew) { c.dust = C.dustPerDuplicate[c.creature.rarity] || 0; dust += c.dust; }
+        continue;
+      }
       c.isNew = !S.owned[id];
       S.owned[id] = (S.owned[id] || 0) + 1;
       c.count = S.owned[id];
@@ -128,8 +144,14 @@ window.Game = (function () {
     { id: "daily-7", name: "Moonlit Devotion", desc: "Claim 7 daily packs.", icon: "moon", goal: 7, prog: () => S.dailyClaims, reward: { packs: 2 } },
     { id: "holo-1", name: "Prismatic!", desc: "Pull your first Holo card.", icon: "gem", goal: 1, prog: holoCount, reward: { packs: 1 } },
     { id: "holo-10", name: "Rainbow Collector", desc: "Own 10 different Holo cards.", icon: "star", goal: 10, prog: holoCount, reward: { packs: 2, dust: 100 } },
+    { id: "first-win", name: "First Victory", desc: "Win your first battle.", icon: "star", goal: 1, prog: () => S.battle.wins, reward: { packs: 1 } },
+    { id: "guardian-1", name: "Isle Champion", desc: "Defeat an isle's guardian.", icon: "crown", goal: 1, prog: () => guardiansBeaten(), reward: { packs: 2 } },
+    { id: "guardian-all", name: "Conqueror of Vael", desc: "Defeat all 10 isle guardians.", icon: "crown", goal: 10, prog: () => guardiansBeaten(), reward: { packs: 5, dust: 500 } },
+    { id: "allies-6", name: "Fellowship", desc: "Recruit 6 different Allies.", icon: "heart", goal: 6, prog: () => SUP.allies.filter(x => S.support[x.id]).length, reward: { packs: 1 } },
+    { id: "items-all", name: "Fully Stocked", desc: "Own every Item card.", icon: "pack", goal: SUP.items.length, prog: () => SUP.items.filter(x => S.support[x.id]).length, reward: { packs: 2 } },
     { id: "copies-5", name: "Best Friends", desc: "Own 5 copies of one creature.", icon: "heart", goal: 5, prog: () => Math.max(0, ...Object.values(S.owned)), reward: { dust: 40 } }
   ];
+  const guardiansBeaten = () => Object.keys(S.battle.cleared).filter(k => k.endsWith("-3")).length;
   const achStatus = a => { const p = Math.min(a.goal, a.prog()); return { p, done: p >= a.goal, claimed: !!S.achievements[a.id] }; };
   const unlockedIds = () => ACH.filter(a => achStatus(a).done).map(a => a.id);
   const claimable = () => ACH.filter(a => { const s = achStatus(a); return s.done && !s.claimed; }).length;
@@ -155,14 +177,14 @@ window.Game = (function () {
   /* ---------- odds simulation (used by tools/simulate.js and the console) ---------- */
   function simulate(n = 100000) {
     const counts = Object.fromEntries(RARITIES.map(r => [r, 0])), special = Object.fromEntries(RARITIES.map(r => [r, 0]));
-    for (let i = 0; i < n; i++) for (const c of generatePack()) { counts[c.creature.rarity]++; if (c.special) special[c.creature.rarity]++; }
+    for (let i = 0; i < n; i++) for (const c of generatePack()) { if (c.support) continue; counts[c.creature.rarity]++; if (c.special) special[c.creature.rarity]++; }
     return { packs: n, perPack: Object.fromEntries(RARITIES.map(r => [r, counts[r] / n])), specialSlot: Object.fromEntries(RARITIES.map(r => [r, special[r] / n])) };
   }
 
   load();
   return {
     get state() { return S; }, get storageOK() { return storageOK; }, get tampered() { return tampered; },
-    ALL, byId, pools, ACH, achStatus, claim, claimable,
+    ALL, byId, pools, SUP, unlockedIds, ACH_IDS: () => ACH.map(a => a.id), ACH, achStatus, claim, claimable,
     dailyReady, msUntilDaily, packsAvailable, clockRolledBack, openPack, buyPackWithDust,
     discovered, holoCount, totalCards, completion, ownedOf, exportCode, importCode, reset, grantTestPack, save, simulate, generatePack
   };

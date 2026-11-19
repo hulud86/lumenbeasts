@@ -231,5 +231,32 @@
     cr.power = cr.atk + cr.def;
     if (FEATS[cr.name]) cr.feat = FEATS[cr.name].split(/\s+/);
   }
+  // Battle ability effects. Every creature gets a real effect and accurate card text.
+  const FX_TEXT = {
+    power: "Unleashes a massive strike for 1.8× damage.",
+    burn: "Strikes and burns the foe for 3 turns.",
+    buff: "Powers up: +30% Attack for the rest of the battle.",
+    heal: "Restores 35% of its HP.",
+    shield: "Raises a barrier that halves the next 2 hits.",
+    drain: "Strikes and heals for half the damage dealt.",
+    weaken: "Strikes and lowers the foe's Attack by 25% for 3 turns.",
+    stun: "Strikes with a 50% chance to stun the foe for a turn.",
+    freeze: "Strikes with a 50% chance to freeze the foe for a turn.",
+    double: "Strikes twice in a flash (2 × 0.75 damage).",
+    dodge: "Strikes, then dodges the next attack.",
+    pierce: "Strikes straight through Defense, ignoring it."
+  };
+  const FX_BY_EL = {
+    fire: ["burn", "buff", "power"], water: ["heal", "shield", "drain"], nature: ["heal", "weaken", "shield"],
+    electric: ["stun", "double", "power"], shadow: ["drain", "weaken", "dodge"], celestial: ["heal", "pierce", "dodge"],
+    ice: ["freeze", "shield", "power"], earth: ["shield", "buff", "power"], wind: ["double", "dodge", "power"], arcane: ["pierce", "weaken", "stun"]
+  };
+  const FOUNDER_FX = { 1: "buff", 2: "shield", 3: "heal", 4: "stun", 5: "dodge", 6: "freeze", 7: "weaken", 8: "power", 9: "double", 10: "pierce" };
+  for (const cr of list) {
+    const fx = FOUNDER_FX[cr.id] || (cr.rarity === "mythic" ? FX_BY_EL[cr.element][0] === "heal" ? "drain" : FX_BY_EL[cr.element][0] : FX_BY_EL[cr.element][(cr.id * 7) % 3]);
+    cr.ability.fx = fx;
+    cr.ability.text = FX_TEXT[fx];
+  }
+  window.FX_TEXT = FX_TEXT;
   window.CREATURES = list;
 })();
