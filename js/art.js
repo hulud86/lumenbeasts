@@ -842,6 +842,74 @@ ${glyph("celestial", 60, 128, .35, 0)}${glyph("celestial", 150, 46, .3, 0)}`
     const p = palette(cr);
     return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 160">${defs(p)}${scene(cr.element, p, rng(cr.id * 13))}${aura(cr.rarity, p)}${inner(cr, p)}</svg>`;
   }
+  /* ---------- full-art "illustration" compositions for Rare+ (200 x 280) ---------- */
+  const SKY = {
+    fire: (p, r) => `<circle cx="150" cy="40" r="46" fill="#ffb347" opacity=".35" filter="url(#blur)"/><circle cx="150" cy="40" r="20" fill="#ffd27a" opacity=".55"/>` +
+      Array.from({ length: 4 }, (_, i) => `<ellipse cx="${30 + i * 50}" cy="${18 + (i % 2) * 14}" rx="40" ry="12" fill="#2a0a05" opacity=".55"/>`).join("") +
+      Array.from({ length: 40 }, () => `<circle cx="${f(r() * 200)}" cy="${f(r() * 200)}" r="${f(.5 + r() * 1.6)}" fill="${r() > .5 ? "#ffcf6a" : "#ff7a3a"}" opacity="${f(.4 + r() * .6)}"/>`).join(""),
+    water: (p, r) => `<path d="M0 22 C30 14 60 28 100 20 C140 12 170 26 200 18" stroke="#bff3ff" stroke-width="2" fill="none" opacity=".6"/>` +
+      [20, 70, 120, 160].map(x => `<path d="M${x} 0 L${x + 30} 0 L${x - 10} 220 L${x - 30} 220Z" fill="#e6fbff" opacity=".07"/>`).join("") +
+      Array.from({ length: 5 }, () => { const x = 20 + r() * 160, y = 30 + r() * 40; return `<path d="M${f(x)} ${f(y)} q8 -5 16 0 q-8 5 -16 0Z M${f(x + 16)} ${f(y)} l5 -4 v8Z" fill="#021426" opacity=".5"/>`; }).join("") +
+      Array.from({ length: 24 }, () => `<circle cx="${f(r() * 200)}" cy="${f(r() * 220)}" r="${f(1 + r() * 4)}" fill="none" stroke="#bff3ff" stroke-width=".8" opacity=".5"/>`).join(""),
+    nature: (p, r) => `<path d="M0 0 H200 V20 C180 34 170 18 150 30 C130 42 120 22 100 34 C80 44 70 24 50 32 C30 40 20 22 0 30Z" fill="#123d1c"/>` +
+      Array.from({ length: 7 }, (_, i) => { const x = 14 + i * 30; const len = 30 + r() * 50; return `<path d="M${x} 20 C${x - 6} ${20 + len * .4} ${x + 6} ${20 + len * .7} ${x} ${20 + len}" stroke="#2f7a3a" stroke-width="2" fill="none"/>` + glyph("nature", x, 20 + len, .45, r() * 60 - 30); }).join("") +
+      `<path d="M150 0 L80 220 L120 220 L170 0Z" fill="#fffbd0" opacity=".08"/>` + Array.from({ length: 14 }, () => `<circle cx="${f(r() * 200)}" cy="${f(40 + r() * 160)}" r="1.4" fill="#f4ff9a" opacity=".9" filter="url(#glow)"/>`).join(""),
+    electric: (p, r) => Array.from({ length: 5 }, (_, i) => `<g><ellipse cx="${i * 48}" cy="${16 + (i % 2) * 10}" rx="46" ry="20" fill="#1c1838"/><ellipse cx="${i * 48 + 20}" cy="${8 + (i % 2) * 10}" rx="30" ry="16" fill="#2c2850"/></g>`).join("") +
+      `<g filter="url(#glow)" stroke="#fff6a8" fill="none" stroke-linejoin="round"><path d="M40 20 L30 60 L44 62 L26 110" stroke-width="2.6"/><path d="M30 60 L14 80" stroke-width="1.4"/><path d="M168 24 L176 54 L164 56 L178 92" stroke-width="2"/></g>` +
+      Array.from({ length: 30 }, () => { const x = r() * 200, y = 30 + r() * 180; return `<path d="M${f(x)} ${f(y)} l-3 9" stroke="#9fa6ff" stroke-width=".8" opacity=".45"/>`; }).join(""),
+    shadow: (p, r) => Array.from({ length: 40 }, () => `<circle cx="${f(r() * 200)}" cy="${f(r() * 140)}" r="${f(.4 + r() * 1)}" fill="#e6d6ff" opacity="${f(.3 + r() * .7)}"/>`).join("") +
+      `<circle cx="132" cy="56" r="48" fill="#e9dcff" opacity=".18" filter="url(#blur)"/><circle cx="132" cy="56" r="36" fill="#efe6ff" opacity=".92"/><circle cx="120" cy="48" r="6" fill="#d6c4f4"/><circle cx="144" cy="66" r="4" fill="#d6c4f4"/><circle cx="138" cy="44" r="3" fill="#d6c4f4"/>` +
+      Array.from({ length: 6 }, () => { const x = 20 + r() * 170, y = 20 + r() * 90, s = .6 + r() * .7; return `<path transform="translate(${f(x)} ${f(y)}) scale(${f(s)})" d="M0 0 C-4 -4 -10 -4 -14 0 C-10 -1 -6 1 -4 4 C-2 2 2 2 4 4 C6 1 10 -1 14 0 C10 -4 4 -4 0 0Z" fill="#05020c"/>`; }).join(""),
+    celestial: (p, r) => `<g transform="translate(100 60)" opacity=".8">` + Array.from({ length: 3 }, (_, i) => `<path d="M0 0 C${30 + i * 20} -${10 + i * 6} ${60 + i * 20} ${20 + i * 10} ${40 + i * 30} ${50 + i * 10}" stroke="${i % 2 ? "#ff8ad8" : "#9a7cff"}" stroke-width="${10 - i * 2}" fill="none" opacity=".35" filter="url(#soft)" transform="rotate(${i * 120})"/>`).join("") + `<circle r="8" fill="#fff4d6" filter="url(#glow)"/></g>` +
+      Array.from({ length: 70 }, () => `<circle cx="${f(r() * 200)}" cy="${f(r() * 230)}" r="${f(.3 + r() * 1.2)}" fill="#fff" opacity="${f(.4 + r() * .6)}"/>`).join("") +
+      `<path d="M10 30 L150 120" stroke="#fff" stroke-width="1.4" opacity=".55" stroke-linecap="round"/><circle cx="150" cy="120" r="3" fill="#fff" filter="url(#glow)"/>`,
+    ice: (p, r) => [0, 1, 2].map(i => `<path d="M${-20 + i * 30} 0 C${20 + i * 40} ${40 + i * 10} ${80 + i * 30} 10 ${120 + i * 30} ${50 + i * 10} C${150 + i * 20} ${70 + i * 10} 190 40 220 ${60 + i * 6}" stroke="${["#8affd6", "#7ec8ff", "#c08aff"][i]}" stroke-width="${16 - i * 3}" fill="none" opacity=".28" filter="url(#soft)"/>`).join("") +
+      Array.from({ length: 50 }, () => `<circle cx="${f(r() * 200)}" cy="${f(r() * 230)}" r="${f(.6 + r() * 1.6)}" fill="#fff" opacity="${f(.5 + r() * .5)}"/>`).join("") + glyph("ice", 30, 40, .8, 15, .7) + glyph("ice", 172, 30, .6, -10, .6),
+    earth: (p, r) => `<path d="M0 0 H50 C40 30 46 70 30 110 L0 120Z M200 0 H156 C164 34 156 70 172 104 L200 112Z" fill="#2a170a"/><path d="M0 0 C60 30 140 30 200 0" stroke="#2a170a" stroke-width="14" fill="none"/>` +
+      [[24, 60], [176, 70], [36, 96], [168, 40]].map(([x, y]) => `<path d="M${x - 4} ${y + 6} L${x} ${y - 10} L${x + 4} ${y + 6}Z" fill="#ffcf8a" filter="url(#glow)" opacity=".9"/>`).join("") +
+      Array.from({ length: 24 }, () => `<circle cx="${f(r() * 200)}" cy="${f(30 + r() * 180)}" r="${f(.5 + r())}" fill="#ffe0b0" opacity=".5"/>`).join(""),
+    wind: (p, r) => Array.from({ length: 6 }, () => { const x = r() * 200, y = 10 + r() * 90; return `<g fill="#fff" opacity=".6"><ellipse cx="${f(x)}" cy="${f(y)}" rx="30" ry="10"/><ellipse cx="${f(x + 14)}" cy="${f(y - 7)}" rx="16" ry="10"/></g>`; }).join("") +
+      Array.from({ length: 8 }, () => { const y = 20 + r() * 190, x = r() * 120; return `<path d="M${f(x)} ${f(y)} C${f(x + 30)} ${f(y - 8)} ${f(x + 60)} ${f(y + 8)} ${f(x + 90)} ${f(y)} c8 -2 8 -12 0 -10" stroke="#effff8" stroke-width="1.4" fill="none" opacity=".55"/>`; }).join("") +
+      Array.from({ length: 7 }, (_, i) => `<path d="M${130 + i * 8} ${30 + (i % 3) * 6} q3 -3 6 0 q3 -3 6 0" stroke="#164a4a" stroke-width="1.4" fill="none"/>`).join(""),
+    arcane: (p, r) => `<circle cx="100" cy="70" r="56" fill="none" stroke="#ff9be3" stroke-width="1.4" opacity=".55"/><circle cx="100" cy="70" r="46" fill="none" stroke="#ffd1f2" stroke-width=".8" stroke-dasharray="3 5" opacity=".7"/>` +
+      Array.from({ length: 8 }, (_, i) => glyph("arcane", 100 + Math.cos(i * .785) * 56, 70 + Math.sin(i * .785) * 56, .35, 0, .8)).join("") +
+      `<path d="M10 40 L44 40 L36 54 L18 54Z M150 26 L190 26 L180 42 L160 42Z" fill="#2a0f4a"/><path d="M14 40 l4 -10 l6 10 M156 26 l6 -12 l6 12" fill="#4a1a7a"/>` +
+      Array.from({ length: 30 }, () => `<circle cx="${f(r() * 200)}" cy="${f(r() * 230)}" r="${f(.3 + r())}" fill="#ffd1f2" opacity="${f(.3 + r() * .7)}"/>`).join("")
+  };
+  const FORE = {
+    fire: p => `<path d="M0 214 C40 206 80 222 120 212 C150 204 180 216 200 210 V280 H0Z" fill="#1a0603"/><path d="M10 240 C50 228 90 246 140 236 C170 230 190 238 200 236" stroke="#ff6a1a" stroke-width="2.4" fill="none" opacity=".7" filter="url(#glow)"/>`,
+    water: p => `<path d="M0 212 C40 204 80 220 120 210 C150 204 180 214 200 208 V280 H0Z" fill="#021426"/><path d="M0 226 C40 218 80 234 120 224 C150 218 180 228 200 222" stroke="#2a8aba" stroke-width="1.4" fill="none" opacity=".7"/><path d="M14 280 C10 250 24 238 16 214 M186 280 C190 252 176 240 184 218" stroke="#2f9a7a" stroke-width="5" fill="none" stroke-linecap="round"/>`,
+    nature: p => `<path d="M0 210 C60 200 140 204 200 210 V280 H0Z" fill="#0d2e16"/>` + Array.from({ length: 26 }, (_, i) => { const x = i * 8; return `<path d="M${x} 280 Q${x + 2} 236 ${x + 6} ${214 - (i * 7 % 13)}" stroke="#3f9a4a" stroke-width="1.8" fill="none"/>`; }).join(""),
+    electric: p => `<path d="M0 212 C60 204 140 206 200 212 V280 H0Z" fill="#110e24"/><path d="M0 228 H200" stroke="#fff6a8" stroke-width=".8" opacity=".25"/>`,
+    shadow: p => `<path d="M0 210 C40 198 80 208 120 200 C160 192 180 204 200 200 V280 H0Z" fill="#05020c"/><ellipse cx="100" cy="214" rx="120" ry="12" fill="${p.light}" opacity=".12" filter="url(#blur)"/>`,
+    celestial: p => `<ellipse cx="100" cy="222" rx="130" ry="26" fill="#fff4d6" opacity=".14"/><path d="M0 220 C60 212 140 214 200 220 V280 H0Z" fill="#120f33" opacity=".85"/>`,
+    ice: p => `<path d="M0 210 C60 202 140 204 200 210 V280 H0Z" fill="#e9f8ff"/><path d="M0 230 C50 222 120 238 200 228" stroke="#bfe6f8" stroke-width="3" fill="none"/>`,
+    earth: p => `<path d="M0 210 C60 202 140 204 200 210 V280 H0Z" fill="#2a170a"/>` + [[20, 226], [60, 240], [150, 232], [184, 248], [100, 252]].map(([x, y]) => glyph("earth", x, y, .7, 0, .9)).join(""),
+    wind: p => `<path d="M0 214 C60 206 140 208 200 214 V280 H0Z" fill="#164a4a"/>` + Array.from({ length: 20 }, (_, i) => `<path d="M${i * 10} 280 Q${i * 10 + 8} 240 ${i * 10 + 14} 220" stroke="#5fb0a0" stroke-width="1.4" fill="none" opacity=".8"/>`).join(""),
+    arcane: p => `<path d="M0 214 C60 206 140 208 200 214 V280 H0Z" fill="#14072a"/><ellipse cx="100" cy="218" rx="86" ry="14" fill="none" stroke="#ff9be3" stroke-width="1.6" opacity=".7" filter="url(#glow)"/>`
+  };
+  function tallSvg(cr) {
+    const p = palette(cr), R = rng(cr.id * 31 + 7), el = cr.element;
+    let sc = scene(el, p, rng(cr.id * 13)).replace('<rect width="200" height="160" fill="url(#sky)"/>', "");
+    if (el === "shadow") sc = sc.replace(/<circle cx="158" cy="38" r="22"[^>]*\/><circle cx="168" cy="32" r="20"[^>]*\/>/, "");
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 280">${defs(p)}<defs>
+<linearGradient id="tsky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${p.bg1}"/><stop offset=".6" stop-color="${p.bg2}"/><stop offset="1" stop-color="${p.bg1}"/></linearGradient>
+<radialGradient id="vig" cx=".5" cy=".42" r=".78"><stop offset=".55" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".55"/></radialGradient>
+<linearGradient id="rays" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".22"/><stop offset=".6" stop-color="#fff" stop-opacity="0"/></linearGradient>
+<filter id="grain" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" seed="${cr.id}"/><feColorMatrix type="matrix" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 .09 0"/></filter></defs>
+<rect width="200" height="280" fill="url(#tsky)"/>${SKY[el](p, R)}
+<g transform="translate(-10 22) scale(1.1)">${sc}</g>
+<g transform="translate(0 -16)">${FORE[el](p)}</g><rect y="262" width="200" height="18" fill="#000" opacity=".35"/>
+<path d="M0 0 L90 0 L200 170 L200 230Z" fill="url(#rays)"/>
+<g transform="translate(-10 22) scale(1.1)">${aura(cr.rarity, p)}${inner(cr, p)}</g>
+<rect width="200" height="280" fill="url(#vig)"/><rect width="200" height="280" filter="url(#grain)"/></svg>`;
+  }
+  const tallCache = new Map();
+  function tallUri(cr) {
+    if (cr.tallImg) return cr.tallImg;
+    if (!tallCache.has(cr.id)) tallCache.set(cr.id, "data:image/svg+xml;charset=utf-8," + encodeURIComponent(tallSvg(cr)));
+    return tallCache.get(cr.id);
+  }
   // Undiscovered creatures: dark silhouette with a faint elemental rim light
   function silhouette(cr) {
     const p = palette(cr), e = E[cr.element];
@@ -865,5 +933,5 @@ ${glyph("celestial", 60, 128, .35, 0)}${glyph("celestial", 150, 46, .3, 0)}`
   function icon(el, size = 18) {
     return `<svg class="el-icon" width="${size}" height="${size}" viewBox="-14 -14 28 28" aria-hidden="true">${GLYPH[el](E[el])}</svg>`;
   }
-  window.Art = { svg, uri, silUri, silhouette, icon };
+  window.Art = { svg, uri, silUri, silhouette, tallSvg, tallUri, icon };
 })();

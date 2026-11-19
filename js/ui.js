@@ -73,13 +73,14 @@
 <div class="card-foot"><span class="stat-chip stat-atk">${I.sword}??</span><span class="set-code">${esc(C.setName)} · ${pad(cr.id)}/${G.ALL.length}</span><span class="stat-chip stat-def">${I.shield}??</span></div>
 </div></div></div>`;
     }
-    return `<div class="card r-${cr.rarity}${o.tilt ? " tilt" : ""}" data-id="${cr.id}" style="${cardStyle(cr)}">
+    const full = ["rare", "epic", "mythic"].includes(cr.rarity);
+    return `<div class="card r-${cr.rarity}${full ? " full-art" : ""}${o.tilt ? " tilt" : ""}" data-id="${cr.id}" style="${cardStyle(cr)}">
 <div class="card-body"><div class="card-frame">
 <div class="card-head"><span class="card-name">${esc(cr.name)}</span><span class="card-el" title="${EL[cr.element].label}">${Art.icon(cr.element)}</span></div>
-<div class="card-art"><img src="${Art.uri(cr)}" alt="${esc(cr.name)}" loading="lazy" draggable="false"><span class="card-no">#${pad(cr.id)}</span></div>
-<div class="card-type"><span class="species">${cr.title ? `<span class="mythic-title">${esc(cr.title)}</span>` : `${EL[cr.element].label} · ${esc(cr.species || RAR[cr.rarity].label)}`}</span>${gems(cr.rarity)}</div>
+<div class="card-art"><img src="${full ? Art.tallUri(cr) : Art.uri(cr)}" alt="${esc(cr.name)}" loading="lazy" draggable="false"><span class="card-no">#${pad(cr.id)}</span></div>
+<div class="card-type"><span class="species">${cr.title ? `<span class="mythic-title">${esc(cr.title)}</span>` : full ? `<span class="illus-tag">✦ ${RAR[cr.rarity].label} Illustration</span>` : `${EL[cr.element].label} · ${esc(cr.species || RAR[cr.rarity].label)}`}</span>${gems(cr.rarity)}</div>
 <div class="card-text"><div class="card-ab"><b>${esc(cr.ability.name)}</b> — ${esc(cr.ability.text)}</div><p class="card-flavor">${esc(cr.desc)}</p></div>
-<div class="card-foot"><span class="stat-chip stat-atk" title="Attack">${I.sword}${cr.atk}</span><span class="set-code">${esc(C.setName)} · ${pad(cr.id)}/${G.ALL.length}</span><span class="stat-chip stat-def" title="Defense">${I.shield}${cr.def}</span></div>
+<div class="card-foot"><span class="stat-chip stat-atk" title="Attack">${I.sword}${cr.atk}</span><span class="set-code">${full ? "<b>★</b> " : ""}${esc(C.setName)} · ${pad(cr.id)}/${G.ALL.length}</span><span class="stat-chip stat-def" title="Defense">${I.shield}${cr.def}</span></div>
 </div><div class="card-shine"></div><div class="card-holo"></div><div class="card-spark"></div></div>
 ${o.count > 1 ? `<span class="card-badge badge-count">×${o.count}</span>` : ""}${o.isNew ? `<span class="card-badge badge-new">NEW</span>` : ""}
 </div>`;

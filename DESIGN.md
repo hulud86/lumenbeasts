@@ -65,13 +65,15 @@ Every card is 5:7 (the real trading-card ratio) and built from one HTML/CSS comp
 
 **Rarity treatments (each tier adds to the one below):**
 
-| Rarity | Frame | Extras |
+| Rarity | Layout | Extras |
 |---|---|---|
-| Common | Brushed silver | None |
-| Uncommon | Emerald metal | 2 gems |
-| Rare | Sapphire metal + blue glow | Foil light sweep; glowing aura behind the creature |
-| Epic | Amethyst + purple glow | Holographic rainbow layer that follows your pointer; light rays in the art |
-| Mythic | Animated rainbow-gold border that rotates | **Full-art layout:** the art fills the card and text floats on glass; strongest holo; sparkle layer; a title line ("the Shard Sovereign") |
+| Common | Standard: framed art window + text box | Brushed-silver frame |
+| Uncommon | Standard | Emerald frame, 2 gems |
+| Rare | **Full-art illustration:** a taller scene fills the whole card and text floats on glass | Sapphire frame, etched foil texture, light rays, paper grain, "✦ Rare Illustration" tag, ★ beside the collector number |
+| Epic | Full-art illustration | Amethyst frame and glow, rainbow holo layered over the etched foil, light rays in the art |
+| Mythic | Full-art illustration | Animated rainbow-gold border, strongest holo, sparkle layer, gold name and a title line ("the Shard Sovereign") |
+
+The full-art scenes are made by `tallSvg()` in `js/art.js`. Each element has its own sky (a volcano sun with ash, light shafts underwater, hanging vines, thunderheads, a huge moon with bats, a galaxy, aurora curtains, canyon cliffs, cloud streams, floating rune circles) and its own foreground. Painted art for these cards can be supplied per creature with `tallImg`.
 
 **Built so these can be added later:** alternate art (point a creature at a different image), special foil editions (a new CSS class that reuses the holo layer), and new sets (the set name and collector numbers come from config).
 
