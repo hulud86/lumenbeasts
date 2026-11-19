@@ -1,6 +1,6 @@
 # Lumen Beasts
 
-A free-to-play fantasy creature collecting card game that runs entirely in the browser. Open a free Shard Pack every day and collect 100 original creatures across ten elemental isles.
+A free-to-play fantasy creature collecting card game that runs entirely in the browser. Open a free Shard Pack every day and collect 120 original creatures across ten elemental isles.
 
 - **Play locally:** double-click `index.html`. No install or server needed.
 - **Design bible:** see [`DESIGN.md`](DESIGN.md).

@@ -1,5 +1,5 @@
 /* =========================================================
-   LUMEN BEASTS — creature roster (Set 1: Shardfall, 100 creatures)
+   LUMEN BEASTS — creature roster (Set 1: Shardfall, 120 creatures)
    To add a creature: append a line with c(...). IDs are assigned
    in order. "form" picks the illustration body plan for creatures
    without hand-drawn art (see art.js). Set `img` to a file path
@@ -168,8 +168,33 @@
   c("Chronolith", "arcane", "epic", 80, 80, "golem", "Timeless", "Time Fold", "", "A clockwork-crystal sentinel that guards a door to yesterday.");
 
 
+  /* ---------- 101–120: Mythic Legends (myth & folklore creatures) ---------- */
+  c("Hexling", "arcane", "common", 20, 18, "witch", "Eager", "Wobbly Hex", "", "An apprentice witch who has nearly mastered her broom. She has definitely not mastered landing.");
+  c("Boolet", "shadow", "common", 14, 22, "ghost", "Bashful", "Peekaboo", "", "A tiny bedsheet ghost who haunts libraries and gets scared every time someone turns a page.");
+  c("Grimalkyn", "shadow", "common", 24, 16, "quad", "Smug", "Familiar's Curse", "", "A witch's cat who wears her hat whenever she isn't looking, and casts better spells than she does.");
+  c("Mawfin", "water", "common", 26, 18, "fish", "Hungry", "Lure Light", "", "A baby anglerfish whose glowing lure attracts snacks, sailors, and very confused fireflies.");
+  c("Wrapscallion", "earth", "common", 18, 28, "golem", "Mischievous", "Unravel", "", "A pint-sized mummy from the buried tombs of Grauldeep. It leaves a trail of loose bandages everywhere it goes.");
+  c("Cindrake", "fire", "common", 28, 20, "dragon", "Feisty", "Tiny Inferno", "", "A dragon hatchling no bigger than a cat. Its sneezes have burned down three haystacks and a very surprised scarecrow.");
+  c("Tribark", "fire", "uncommon", 48, 40, "quad", "Loyal", "Triple Howl", "", "A three-headed hound pup who guards the gates of Mount Kael. Its three heads rarely agree on anything except dinner.");
+  c("Banshriek", "wind", "uncommon", 46, 38, "ghost", "Mournful", "Wailing Gale", "", "A ghost whose cry rides the wind for miles. Sailors on the Zephyr Steppes plug their ears when the breeze starts to sing.");
+  c("Ghastmire", "water", "uncommon", 40, 50, "ghost", "Gloomy", "Bog Grip", "", "A drowned spirit of the misty marshes, draped in pondweed. It only wants someone to help it find its lost boot.");
+  c("Taurock", "earth", "uncommon", 54, 52, "golem", "Stubborn", "Labyrinth Charge", "", "A stone minotaur who guards a maze beneath Grauldeep and has never once gotten lost in it.");
+  c("Basilix", "arcane", "uncommon", 50, 44, "serpent", "Regal", "Petrifying Gaze", "", "A crowned serpent whose stare turns things to stone. It wears tinted spectacles as a courtesy.");
+  c("Kitsuna", "celestial", "rare", 64, 58, "quad", "Cunning", "Foxfire", "", "A nine-tailed fox spirit. Each tail holds a captured star, and it gains a new one every hundred years.");
+  c("Sirensong", "water", "rare", 58, 62, "siren", "Enchanting", "Siren's Lullaby", "", "A siren who sings from the rocks of the Tidemere. Her songs calm storms, and occasionally sailors' tempers.");
+  c("Bramblehag", "nature", "rare", 66, 56, "witch", "Cackling", "Cauldron Brew", "", "A swamp witch who brews potions in a cauldron older than the forest. Nobody knows what's in them, including her.");
+  c("Lunarfang", "shadow", "rare", 72, 56, "golem", "Feral", "Moonrage", "", "A werewolf of Duskveil who transforms only under the full moon, and spends the other nights apologizing.");
+  c("Mossdrake", "nature", "rare", 68, 60, "dragon", "Ancient", "Overgrowth Breath", "", "A sleepy forest dragon who hasn't moved in so long that a meadow grew across its wings.");
+  c("Krakoth", "water", "epic", 86, 78, "kraken", "Ravenous", "Abyssal Grasp", "", "The kraken of the deep trenches. Ships that sail too far out sometimes return with suspicious tentacle-shaped dents.");
+  c("Gravewarden", "earth", "epic", 80, 86, "ghost", "Vigilant", "Eternal Vigil", "", "The spectral armor of a knight who swore to guard the old kings' tombs and kept that oath long after death.");
+  c("Hrimvald", "ice", "mythic", 95, 96, "dragon", "Wrathful", "Endless Winter", "", "The frost wyrm sleeping beneath Rimeholt's glaciers. When it wakes, winter lasts a hundred years.", { title: "the Frost Wyrm" });
+  c("Aerovant", "wind", "mythic", 98, 88, "dragon", "Untamed", "Skybreaker Gale", "", "The great dragon of the open sky. It has never touched the ground, and the clouds part wherever it flies.", { title: "the Gale Dragon" });
+
   // Distinguishing features used by the illustration engine
   const FEATS = {
+    Hexling: "", Boolet: "", Grimalkyn: "cat hat", Mawfin: "angler", Wrapscallion: "mummy", Cindrake: "front", Tribark: "heads3",
+    Banshriek: "banshee", Ghastmire: "bog", Taurock: "bull", Basilix: "coil crown runes", Kitsuna: "ninetails tufts", Sirensong: "", Bramblehag: "hag",
+    Lunarfang: "werewolf", Mossdrake: "perched", Krakoth: "", Gravewarden: "knight", Hrimvald: "front", Aerovant: "",
     Petalfly: "butterfly",
     Shiverfin: "crystalfin",
     Fizzlefish: "eelfish",

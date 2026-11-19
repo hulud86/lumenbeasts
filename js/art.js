@@ -283,7 +283,11 @@
       const headShape = B === "reptile" ? `<ellipse cx="76" cy="86" rx="26" ry="20" fill="url(#body)" stroke="${p.line}" stroke-width="2.6"/>`
         : B === "hoof" ? `<ellipse cx="76" cy="82" rx="23" ry="26" fill="url(#body)" stroke="${p.line}" stroke-width="2.6"/>`
         : `<circle cx="76" cy="84" r="25" fill="url(#body)" stroke="${p.line}" stroke-width="2.6"/>`;
-      const head = `<g transform="translate(${hx} ${hy}) scale(${f(hr / 25)}) translate(-76 -84)">${mane}${ears}${headShape}${snout}${tusks}${front}${eyes}${brow}<ellipse cx="94" cy="92" rx="5" ry="3" fill="#ff7aa0" opacity="${B === "reptile" || B === "heavy" ? 0 : .45}"/></g>`;
+      if (F.has("hat")) front += `<ellipse cx="76" cy="62" rx="30" ry="6" fill="#1e1238" stroke="${p.line}" stroke-width="2"/><path d="M62 60 C64 40 72 26 84 18 C86 28 96 30 104 32 C94 32 92 44 92 60Z" fill="#2a1a4a" stroke="${p.line}" stroke-width="2"/><path d="M63 55 C72 57 84 57 92 55 L92 60 C84 62 72 62 62 60Z" fill="${p.main}"/>`;
+      const headInner = `${mane}${ears}${headShape}${snout}${tusks}${front}${eyes}${brow}<ellipse cx="94" cy="92" rx="5" ry="3" fill="#ff7aa0" opacity="${B === "reptile" || B === "heavy" ? 0 : .45}"/>`;
+      const headAt = (x, y, sc) => `<g transform="translate(${f(x)} ${f(y)}) scale(${f(sc)}) translate(-76 -84)">${headInner}</g>`;
+      const head = (F.has("heads3") ? headAt(hx + 26, hy - 12, hr / 25 * .8) + headAt(hx + 8, hy - 26, hr / 25 * .8) : "") + headAt(hx, hy, hr / 25);
+      if (F.has("ninetails")) tail = Array.from({ length: 7 }, (_, i) => { const a = -1.5 + i * .32, ex = tx + Math.cos(a) * 52 + 8, ey = ty + Math.sin(a) * 46; return `<path d="M${tx} ${ty} Q${f(tx + Math.cos(a) * 22 + 14)} ${f(ty + Math.sin(a) * 30 + 6)} ${f(ex)} ${f(ey)}" stroke="${p.line}" stroke-width="12" fill="none" stroke-linecap="round"/><path d="M${tx} ${ty} Q${f(tx + Math.cos(a) * 22 + 14)} ${f(ty + Math.sin(a) * 30 + 6)} ${f(ex)} ${f(ey)}" stroke="${p.body}" stroke-width="8" fill="none" stroke-linecap="round"/><circle cx="${f(ex)}" cy="${f(ey)}" r="5" fill="${p.light}" filter="url(#glow)"/>`; }).join("");
       const stripes = r() > .5 && !F.has("shell") ? Array.from({ length: 3 }, (_, i) => `<path d="M${f(cx - rx * .1 + i * 10)} ${f(cy - ry * .9)} q4 ${f(ry * .5)} 0 ${f(ry)}" stroke="${p.bodyDark}" stroke-width="3" fill="none" opacity=".45" stroke-linecap="round"/>`).join("") : pattern(p, r, cx, cy - 2, rx * .6);
       return shadowE(cx - 4, 142, rx + 10) + tail + back + backLegs +
         `<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="url(#body)" stroke="${p.line}" stroke-width="2.6"/>` +
@@ -326,6 +330,7 @@
       if (V === "coil") {
         return shadowE(108, 144, 54) + tube("M64 134 C64 122 152 122 152 134 C152 146 64 146 64 134", 16) + tube("M74 122 C74 110 142 110 142 122 C142 132 74 132 74 122", 15) +
           tube("M86 112 C86 104 108 100 104 90 C100 80 86 76 92 62", 15) + head(92, 56, 1, { hood: F.has("hood"), tongue: true }) +
+          (F.has("crown") ? `<path d="M80 40 L84 26 L92 36 L100 22 L108 36 L116 26 L120 40Z" fill="#ffc94a" stroke="${p.line}" stroke-width="2" stroke-linejoin="round"/><circle cx="100" cy="34" r="2.6" fill="#ff4a8a"/><path d="M80 52 h10 a4 4 0 0 1 8 0 h4 a4 4 0 0 1 8 0 h10" stroke="${p.line}" stroke-width="1.6" fill="rgba(80,40,120,.5)"/>` : "") +
           (F.has("runes") ? `<ellipse cx="108" cy="104" rx="64" ry="14" fill="none" stroke="${p.light}" stroke-width="1.6" stroke-dasharray="4 6" opacity=".8"/>` + glyph("arcane", 44, 104, .5, 0) + glyph("arcane", 172, 104, .5, 0) : "") + glyph(el, 150, 70, .6, 0);
       }
       if (V === "zigzag") {
@@ -432,7 +437,7 @@
         `<path d="M78 52 C74 34 86 22 96 18 C90 32 92 42 92 52Z M92 52 C96 36 110 30 120 30 C110 40 106 48 102 58Z" fill="${p.horn}" stroke="${p.line}" stroke-width="2"/>` +
         `<path d="M72 58 C80 46 102 46 104 60 C106 70 96 76 84 78 L60 80 C52 80 50 72 56 68 Z" fill="url(#body)" stroke="${p.line}" stroke-width="2.6"/>` +
         `<path d="M58 76 L66 80 L60 84" fill="#fff" stroke="${p.line}" stroke-width="1"/>` + eye(86, 62, 6, { glow: p.light, slit: true }) +
-        `<circle cx="60" cy="70" r="1.8" fill="${p.line}"/>` + `<g filter="url(#glow)" opacity=".9"><path d="M54 74 C40 70 30 78 20 74 C30 84 40 80 52 82Z" fill="#ffb347"/></g>` + glyph(el, 150, 140, .5, 0, .8);
+        `<circle cx="60" cy="70" r="1.8" fill="${p.line}"/>` + `<g filter="url(#glow)" opacity=".9"><path d="M54 74 C40 70 30 78 20 74 C30 84 40 80 52 82Z" fill="${p.light}"/></g>` + glyph(el, 150, 140, .5, 0, .8);
     },
     golem(p, r, el, F) {
       if (F.has("orb")) return shadowE(100, 146, 30) + `<ellipse cx="100" cy="88" rx="62" ry="16" fill="none" stroke="${p.light}" stroke-width="2" opacity=".7" transform="rotate(-12 100 88)"/>` +
@@ -442,6 +447,26 @@
         `<path d="M62 104 C60 76 80 64 102 64 C126 64 142 80 138 106 C136 126 118 134 100 134 C78 134 64 124 62 104Z" fill="url(#body)" stroke="${p.line}" stroke-width="2.6"/><path d="M78 80 L86 90 M120 84 L114 96" stroke="${p.line}" stroke-width="1.6" opacity=".5"/>` +
         eye(88, 98, 7.5, { iris: p.iris, line: p.line }) + eye(112, 98, 7.5, { iris: p.iris, line: p.line }) + `<path d="M94 112 Q100 116 106 112" stroke="${p.line}" stroke-width="2" fill="none"/>` + glyph(el, 100, 62, .7, 0);
       const L = `stroke="${p.line}" stroke-width="2.4" stroke-linejoin="round"`;
+      if (F.has("mummy")) return shadowE(100, 144, 36) + `<rect x="80" y="122" width="16" height="20" rx="6" fill="#e8dcc0" ${L}/><rect x="104" y="122" width="16" height="20" rx="6" fill="#e8dcc0" ${L}/>` +
+        `<path d="M64 104 C62 74 80 58 100 58 C120 58 138 74 136 104 C136 124 120 132 100 132 C80 132 64 124 64 104Z" fill="#efe4c8" ${L}/>` +
+        [64, 74, 84, 94, 104, 114, 124].map((y, i) => `<path d="M${66 + (i % 2) * 2} ${y} C90 ${y + 6} 112 ${y - 4} ${134 - (i % 2) * 2} ${y + 3}" stroke="#c8b890" stroke-width="2" fill="none"/>`).join("") +
+        `<path d="M66 92 C52 96 46 104 50 112 M134 92 C148 96 154 104 150 112" stroke="#efe4c8" stroke-width="10" stroke-linecap="round"/><path d="M134 100 C150 110 156 126 164 136" stroke="#efe4c8" stroke-width="5" stroke-linecap="round"/>` +
+        `<path d="M78 80 C86 74 104 74 122 80 L122 92 C104 86 86 86 78 92Z" fill="#2a1a0a"/>` + eye(108, 85, 5, { glow: p.light }) + `<circle cx="90" cy="85" r="2" fill="${p.light}" opacity=".5"/>` + glyph(el, 100, 54, .6, 0);
+      if (F.has("bull")) return shadowE(100, 144, 50) + `<rect x="76" y="116" width="20" height="26" rx="6" fill="${p.bodyDark}" ${L}/><rect x="104" y="116" width="20" height="26" rx="6" fill="${p.bodyDark}" ${L}/><path d="M76 138 h20 M104 138 h20" stroke="${p.line}" stroke-width="5"/>` +
+        `<path d="M48 76 C36 96 34 118 42 128 L58 126 C58 110 62 98 68 88Z M152 76 C164 96 166 118 158 128 L142 126 C142 110 138 98 132 88Z" fill="url(#body)" ${L}/><circle cx="50" cy="128" r="9" fill="url(#body)" ${L}/><circle cx="150" cy="128" r="9" fill="url(#body)" ${L}/>` +
+        `<path d="M58 76 C58 60 80 54 100 54 C120 54 142 60 142 76 L134 118 C120 124 80 124 66 118Z" fill="url(#body)" ${L}/><path d="M84 78 C92 86 108 86 116 78 M80 96 Q100 104 120 96" stroke="${p.line}" stroke-width="1.6" fill="none" opacity=".5"/>` +
+        `<path d="M76 40 C56 38 46 26 48 14 C56 24 66 28 80 30Z M124 40 C144 38 154 26 152 14 C144 24 134 28 120 30Z" fill="#fffbe8" ${L}/>` +
+        `<path d="M74 34 C70 24 82 20 88 26 M126 34 C130 24 118 20 112 26" fill="url(#body)" ${L}/>` +
+        `<path d="M78 34 C78 22 122 22 122 34 L120 58 C116 70 84 70 80 58Z" fill="url(#body)" ${L}/><ellipse cx="100" cy="60" rx="15" ry="10" fill="url(#belly)" ${L}/><circle cx="95" cy="60" r="2.2" fill="${p.line}"/><circle cx="105" cy="60" r="2.2" fill="${p.line}"/>` +
+        `<path d="M94 66 A6 6 0 0 0 106 66" stroke="#ffc94a" stroke-width="2.6" fill="none"/>` + eye(90, 44, 4.5, { glow: "#ff6a3d" }) + eye(110, 44, 4.5, { glow: "#ff6a3d" }) + `<path d="M84 38 L96 42 M116 38 L104 42" stroke="${p.line}" stroke-width="3" stroke-linecap="round"/>`;
+      if (F.has("werewolf")) return shadowE(100, 144, 50) + `<path d="M80 142 L84 118 L96 120 L94 142Z M106 142 L104 120 L116 118 L122 142Z" fill="${p.bodyDark}" ${L}/>` +
+        `<path d="M62 84 C44 100 38 122 40 136 M138 84 C156 100 162 122 160 136" stroke="${p.line}" stroke-width="15" fill="none" stroke-linecap="round"/><path d="M62 84 C44 100 38 122 40 136 M138 84 C156 100 162 122 160 136" stroke="${p.body}" stroke-width="10" fill="none" stroke-linecap="round"/>` +
+        `<path d="M34 136 l-2 8 M40 138 l0 8 M46 136 l2 8 M154 136 l-2 8 M160 138 l0 8 M166 136 l2 8" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/>` +
+        `<path d="M66 76 C70 60 90 56 100 56 C114 56 132 62 136 78 C142 98 132 122 100 124 C70 122 58 98 66 76Z" fill="url(#body)" ${L}/>` +
+        `<path d="M82 74 L76 66 L86 70 L84 60 L94 68 M118 74 L124 66 L114 70 L116 60 L106 68" stroke="${p.line}" stroke-width="2" fill="none"/><ellipse cx="100" cy="98" rx="18" ry="20" fill="url(#belly)"/>` +
+        `<path d="M80 40 L76 14 L92 32Z M120 40 L124 14 L108 32Z" fill="url(#body)" ${L}/>` +
+        `<path d="M78 46 C78 30 122 30 122 46 C122 58 116 64 112 66 L108 78 C104 84 96 84 92 78 L88 66 C84 64 78 58 78 46Z" fill="url(#body)" ${L}/><ellipse cx="100" cy="70" rx="9" ry="7" fill="url(#belly)"/><ellipse cx="100" cy="66" rx="4" ry="3" fill="${p.line}"/>` +
+        `<path d="M93 76 l2 5 l2 -5 M103 76 l2 5 l2 -5" fill="#fff" stroke="${p.line}" stroke-width=".8"/>` + eye(90, 50, 5, { glow: "#ffd23b", slit: true }) + eye(110, 50, 5, { glow: "#ffd23b", slit: true }) + `<path d="M82 42 L96 46 M118 42 L104 46" stroke="${p.line}" stroke-width="3" stroke-linecap="round"/>`;
       if (F.has("tree")) {
         return shadowE(100, 146, 60) + `<path d="M70 146 C76 132 80 128 82 118 M130 146 C124 132 120 128 118 118 M100 146 V124" stroke="#6a4a22" stroke-width="9" stroke-linecap="round"/>` +
           `<path d="M76 124 C70 96 74 68 84 52 L116 52 C126 68 130 96 124 124Z" fill="#8a6234" ${L}/><path d="M86 60 C84 80 88 100 86 118 M100 56 V120 M114 60 C116 80 112 100 114 118" stroke="#5a3a1a" stroke-width="1.8" fill="none" opacity=".7"/>` +
@@ -537,7 +562,73 @@
         `<path d="M62 106 Q68 110 72 106" stroke="${p.line}" stroke-width="2" fill="none"/>` +
         glyph(el, 108, 52, .7, 0) + glyph(el, 160, 100, .5, 90, .8) +
         (F.has("tusk") ? `<path d="M64 92 L14 70 L64 98Z" fill="#fffbe8" stroke="${p.line}" stroke-width="1.6"/><path d="M54 90 l-4 4 M44 85 l-4 4 M34 81 l-3 4" stroke="${p.line}" stroke-width="1"/>` : "") +
+        (F.has("angler") ? `<path d="M96 74 C90 50 70 40 54 46" stroke="${p.line}" stroke-width="2.6" fill="none"/><circle cx="52" cy="48" r="7" fill="${p.light}" filter="url(#glow)"/><circle cx="52" cy="48" r="3" fill="#fff"/><path d="M60 102 l4 6 l4 -6 l4 6 l4 -6" fill="#fff" stroke="${p.line}" stroke-width="1"/>` : "") +
         (F.has("puffy") ? Array.from({ length: 8 }, (_, i) => { const a = -1.2 + i * .34; return `<path d="M${f(102 + Math.cos(a) * 40)} ${f(100 + Math.sin(a) * 27)} l${f(Math.cos(a) * 8)} ${f(Math.sin(a) * 8)}" stroke="${p.line}" stroke-width="2.2" stroke-linecap="round"/>`; }).join("") : "");
+    },
+    witch(p, r, el, F) {
+      const L = `stroke="${p.line}" stroke-width="2.4" stroke-linejoin="round"`;
+      const hag = F.has("hag"), skin = hag ? "#b8d88a" : "#ffe2cc";
+      const hat = (x, y, s) => `<g transform="translate(${x} ${y}) scale(${s})"><ellipse cx="0" cy="0" rx="32" ry="7" fill="#1e1238" ${L}/><path d="M-16 -2 C-14 -24 -6 -40 6 -50 C10 -40 22 -38 30 -34 C18 -34 14 -24 16 -2Z" fill="#2a1a4a" ${L}/><path d="M-15 -8 C-6 -6 8 -6 15 -8 L16 -2 C6 0 -6 0 -16 -2Z" fill="${p.main}"/>${glyph(el, 0, -18, .45, 0)}</g>`;
+      let s = shadowE(100, 144, 40);
+      if (hag) s += `<path d="M140 60 C150 40 136 30 146 14" stroke="#c4f59a" stroke-width="3" fill="none" opacity=".5" filter="url(#soft)"/><path d="M60 64 C52 46 66 36 56 20" stroke="#c4f59a" stroke-width="3" fill="none" opacity=".5" filter="url(#soft)"/>`;
+      else s += `<path d="M40 132 L160 70" stroke="#7a4a22" stroke-width="5" stroke-linecap="round"/><path d="M150 76 L178 54 L186 66 L180 74 L188 82 L162 84Z" fill="#d8a84a" ${L}/>`;
+      s += `<path d="M100 78 C82 84 72 112 66 140 L134 140 C128 112 118 84 100 78Z" fill="url(#body)" ${L}/><path d="M74 128 Q100 120 126 128" stroke="${p.light}" stroke-width="2" fill="none" opacity=".7"/>` +
+        `<path d="M84 96 C74 104 70 112 72 118" stroke="${p.line}" stroke-width="9" fill="none" stroke-linecap="round"/><path d="M84 96 C74 104 70 112 72 118" stroke="${p.body}" stroke-width="5" fill="none" stroke-linecap="round"/>` +
+        `<path d="M116 96 C126 102 132 100 136 94" stroke="${p.line}" stroke-width="9" fill="none" stroke-linecap="round"/><path d="M116 96 C126 102 132 100 136 94" stroke="${p.body}" stroke-width="5" fill="none" stroke-linecap="round"/>` +
+        `<circle cx="72" cy="119" r="4" fill="${skin}" ${L}/><circle cx="137" cy="93" r="4" fill="${skin}" ${L}/>` +
+        `<path d="M84 64 C78 80 80 96 74 104 M116 64 C122 80 120 96 126 104" stroke="${p.horn}" stroke-width="7" fill="none" stroke-linecap="round"/>` +
+        `<circle cx="100" cy="68" r="17" fill="${skin}" ${L}/>` +
+        (hag ? `<path d="M100 68 L90 80 L100 76Z" fill="${skin}" ${L}/>` + eye(93, 64, 4.5, { glow: "#d6ff6a" }) + eye(108, 64, 4.5, { glow: "#d6ff6a" }) + `<path d="M93 80 Q100 76 108 80" stroke="${p.line}" stroke-width="1.8" fill="none"/>`
+             : eye(93, 67, 5.5, { iris: p.iris, line: p.line }) + eye(107, 67, 5.5, { iris: p.iris, line: p.line }) + `<path d="M96 76 Q100 79 104 76" stroke="${p.line}" stroke-width="1.6" fill="none"/><ellipse cx="88" cy="73" rx="3.5" ry="2" fill="#ff7aa0" opacity=".55"/><ellipse cx="112" cy="73" rx="3.5" ry="2" fill="#ff7aa0" opacity=".55"/>`) +
+        hat(100, 54, 1) + `<path d="M137 93 L150 70" stroke="#7a4a22" stroke-width="3" stroke-linecap="round"/><circle cx="151" cy="68" r="4" fill="${p.light}" filter="url(#glow)"/>`;
+      if (hag) s += `<path d="M70 118 C66 150 134 150 130 118Z" fill="#2a2a34" ${L}/><ellipse cx="100" cy="118" rx="32" ry="8" fill="#5aff7a" stroke="${p.line}" stroke-width="2.4" filter="url(#glow)"/>` +
+        [[88, 114, 4], [104, 112, 5], [114, 116, 3], [96, 106, 2.5]].map(([x, y, rr]) => `<circle cx="${x}" cy="${y}" r="${rr}" fill="#b8ffc4" stroke="#1a6a2a" stroke-width="1"/>`).join("") + `<path d="M74 140 h-6 M126 140 h6" stroke="${p.line}" stroke-width="3"/>`;
+      else s += Array.from({ length: 5 }, () => glyph("celestial", 40 + r() * 120, 30 + r() * 80, .25, 0, .8)).join("");
+      return s;
+    },
+    ghost(p, r, el, F) {
+      const L = `stroke="${p.line}" stroke-width="2.2" stroke-linejoin="round"`;
+      const sheet = `<linearGradient id="gh" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset=".6" stop-color="${p.light}"/><stop offset="1" stop-color="${p.light}" stop-opacity=".25"/></linearGradient>`;
+      if (F.has("knight")) return `<defs>${sheet}</defs><ellipse cx="100" cy="146" rx="30" ry="5" fill="${p.light}" opacity=".3" filter="url(#soft)"/>` +
+        `<path d="M70 96 C64 120 80 136 90 150 C96 138 104 138 110 150 C120 136 136 120 130 96Z" fill="url(#gh)" opacity=".75"/>` +
+        `<path d="M140 40 L146 124" stroke="${p.light}" stroke-width="5" stroke-linecap="round" filter="url(#glow)"/><path d="M134 110 H158" stroke="#8a8a9a" stroke-width="5" stroke-linecap="round"/>` +
+        `<path d="M66 84 C66 70 80 64 100 64 C120 64 134 70 134 84 L130 104 L70 104Z" fill="#8a94a8" ${L}/><path d="M58 80 C58 70 70 66 78 72 L76 92 C66 92 58 88 58 80Z M142 80 C142 70 130 66 122 72 L124 92 C134 92 142 88 142 80Z" fill="#a8b2c4" ${L}/>` +
+        `<path d="M78 40 C78 20 122 20 122 40 L122 62 C122 70 78 70 78 62Z" fill="#a8b2c4" ${L}/><path d="M80 44 H120 V52 H80Z" fill="#05020c"/>` + eye(92, 48, 3.4, { glow: p.light }) + eye(108, 48, 3.4, { glow: p.light }) +
+        `<path d="M100 20 C104 10 112 6 118 8 C114 12 112 16 112 22" fill="${p.horn}" ${L}/><path d="M100 70 V104 M84 76 L84 100 M116 76 L116 100" stroke="#6a748a" stroke-width="1.6"/>`;
+      const banshee = F.has("banshee"), bog = F.has("bog");
+      let s = `<defs>${sheet}</defs><ellipse cx="100" cy="146" rx="28" ry="5" fill="#000" opacity=".25"/>`;
+      if (banshee) s += `<path d="M78 56 C50 60 34 90 20 100 C40 98 50 86 58 80 C48 100 40 118 26 128 C50 122 64 100 72 90 M122 56 C150 60 166 90 180 100 C160 98 150 86 142 80 C152 100 160 118 174 128 C150 122 136 100 128 90" stroke="${p.horn}" stroke-width="6" fill="none" stroke-linecap="round" opacity=".9"/>`;
+      s += `<path d="M64 84 C64 46 136 46 136 84 L138 130 C130 124 124 140 116 132 C110 142 102 130 96 138 C88 128 82 140 76 130 C70 136 66 126 62 130Z" fill="url(#gh)" ${L} opacity=".95"/>`;
+      if (bog) s += `<path d="M70 70 C76 90 72 108 78 120 M128 66 C124 84 130 100 124 116" stroke="#3a7a3a" stroke-width="4" fill="none" stroke-linecap="round"/>` + [[80, 136], [112, 140], [128, 132]].map(([x, y]) => `<path d="M${x} ${y} q3 8 0 12 q-3 -4 0 -12Z" fill="${p.light}" opacity=".8"/>`).join("");
+      s += `<path d="M66 100 C54 98 50 88 56 84 M134 100 C146 98 150 88 144 84" stroke="${p.line}" stroke-width="2.2" fill="#fff"/>`;
+      s += banshee ? eye(88, 78, 6, { glow: p.light }) + eye(112, 78, 6, { glow: p.light }) + `<ellipse cx="100" cy="98" rx="7" ry="10" fill="#1a0d2e"/>` + `<path d="M50 70 q-10 -4 -14 4 M150 70 q10 -4 14 4" stroke="${p.light}" stroke-width="2" fill="none"/>`
+        : `<ellipse cx="88" cy="80" rx="6" ry="8" fill="#1a1020"/><ellipse cx="112" cy="80" rx="6" ry="8" fill="#1a1020"/><circle cx="86" cy="77" r="2" fill="#fff"/><circle cx="110" cy="77" r="2" fill="#fff"/><path d="M94 94 Q100 100 106 94" stroke="#1a1020" stroke-width="2.2" fill="none"/><ellipse cx="80" cy="90" rx="5" ry="3" fill="#ff9ab8" opacity=".6"/><ellipse cx="120" cy="90" rx="5" ry="3" fill="#ff9ab8" opacity=".6"/>`;
+      return s + glyph(el, 150, 50, .6, 0, .8) + glyph(el, 46, 46, .5, 0, .7);
+    },
+    siren(p, r, el, F) {
+      const L = `stroke="${p.line}" stroke-width="2.4" stroke-linejoin="round"`;
+      return `<path d="M30 146 C40 118 70 110 100 112 C130 110 160 120 170 146Z" fill="#3a4a5a" ${L}/><path d="M50 130 l10 -6 M120 124 l14 4" stroke="#5a6a7a" stroke-width="2"/>` +
+        `<path d="M96 108 C120 112 140 118 150 132 C154 138 162 134 168 124 C168 136 164 146 154 146 C162 152 158 158 150 152 C140 144 120 132 96 124Z" fill="url(#bodyLin)" ${L}/>` +
+        Array.from({ length: 6 }, (_, i) => `<path d="M${104 + i * 8} ${116 + i * 2} q4 4 8 0" stroke="${p.line}" stroke-width="1" fill="none" opacity=".5"/>`).join("") +
+        `<path d="M86 56 C70 70 66 100 72 118 C80 110 82 90 84 80Z M110 56 C126 70 132 100 124 116 C118 108 116 90 114 80Z" fill="${p.horn}" ${L}/>` +
+        `<path d="M86 84 C84 100 88 112 96 118 L108 118 C114 110 116 98 112 84Z" fill="#ffe2cc" ${L}/><path d="M86 88 C92 94 106 94 112 88 L112 98 C106 102 92 102 86 98Z" fill="${p.body}" ${L}/>` +
+        `<path d="M88 92 C78 96 72 104 70 112" stroke="#ffe2cc" stroke-width="6" stroke-linecap="round"/><path d="M110 92 C120 88 126 80 128 72" stroke="#ffe2cc" stroke-width="6" stroke-linecap="round"/>` +
+        `<path d="M126 70 C132 60 144 62 146 70 C140 72 134 74 128 76Z" fill="#ffd1e0" ${L}/>` +
+        `<circle cx="98" cy="64" r="16" fill="#ffe2cc" ${L}/><path d="M82 62 C82 44 114 44 114 62 C110 54 100 52 92 56 C88 58 84 60 82 62Z" fill="${p.horn}" ${L}/>` +
+        eye(92, 66, 4.6, { iris: p.iris, line: p.line }) + eye(105, 66, 4.6, { iris: p.iris, line: p.line }) + `<ellipse cx="98.5" cy="74" rx="2.6" ry="2" fill="#c8506a"/>` +
+        `<g fill="${p.light}" filter="url(#glow)"><path d="M140 40 v14 a4 3 0 1 1 -2 -3 v-11 l10 -3 v3Z"/><path d="M160 60 v12 a4 3 0 1 1 -2 -3 v-9Z"/><path d="M48 50 v12 a4 3 0 1 1 -2 -3 v-9Z"/></g>`;
+    },
+    kraken(p, r, el, F) {
+      const L = `stroke="${p.line}" stroke-width="2.4" stroke-linejoin="round"`;
+      const tent = (d, w) => `<path d="${d}" stroke="${p.line}" stroke-width="${w + 5}" fill="none" stroke-linecap="round"/><path d="${d}" stroke="url(#bodyLin)" stroke-width="${w}" fill="none" stroke-linecap="round"/><path d="${d}" stroke="${p.belly}" stroke-width="${w * .35}" fill="none" stroke-linecap="round" stroke-dasharray="1.5 6" opacity=".9"/>`;
+      return tent("M44 140 C30 110 20 80 34 60 C42 50 52 56 46 66", 11) + tent("M156 140 C172 112 182 84 168 62 C160 52 150 58 156 68", 11) +
+        tent("M70 140 C60 120 52 104 58 92", 9) + tent("M130 140 C142 122 150 104 142 92", 9) +
+        `<g transform="translate(150 58) rotate(-18)"><path d="M-14 0 L14 0 L10 8 L-10 8Z" fill="#5a3a1a" ${L}/><path d="M0 0 V-22" stroke="${p.line}" stroke-width="2"/><path d="M0 -22 L14 -6 L0 -6Z" fill="#fff4dd" ${L}/></g>` +
+        `<path d="M58 120 C50 70 74 34 100 34 C126 34 150 70 142 120Z" fill="url(#body)" ${L}/><ellipse cx="86" cy="54" rx="10" ry="6" fill="#fff" opacity=".35"/>` +
+        [[74, 74], [124, 70], [100, 50], [90, 100], [116, 104]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="4" fill="${p.bodyDark}" opacity=".6"/>`).join("") +
+        eye(84, 92, 10, { iris: "#ffcf5a", line: p.line, slitPupil: true }) + eye(116, 92, 10, { iris: "#ffcf5a", line: p.line, slitPupil: true }) + `<path d="M78 78 L92 84 M122 78 L108 84" stroke="${p.line}" stroke-width="3" stroke-linecap="round"/>` +
+        `<path d="M0 128 C30 120 60 136 100 128 C140 120 170 134 200 126 V160 H0Z" fill="${p.dark}" opacity=".85"/><path d="M0 128 C30 120 60 136 100 128 C140 120 170 134 200 126" stroke="${p.light}" stroke-width="2" fill="none" opacity=".8"/>` +
+        `<path d="M40 134 q8 -6 16 0 M150 132 q8 -6 16 0 M90 140 q8 -6 16 0" stroke="#fff" stroke-width="1.6" fill="none" opacity=".6"/>`;
     },
     bug(p, r, el, F) {
       const L = `stroke="${p.line}" stroke-width="2.4" stroke-linejoin="round"`;

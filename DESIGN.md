@@ -108,9 +108,9 @@ The header always shows packs ready, Dust, and Settings (sound, back up or move 
 
 Each Founder also has a species name, a size, a personality and a lore line in `js/creatures.js`.
 
-## 6. The 100-creature roster structure
+## 6. The roster structure (120 creatures)
 
-**Ten elements × ten creatures**, one home isle per element:
+**Ten elements**, one home isle per element:
 
 | Element | Isle | Mythic |
 |---|---|---|
@@ -120,12 +120,16 @@ Each Founder also has a species name, a size, a personality and a lore line in `
 | Electric | Stormcrown | Kaelzar, the Storm Throne |
 | Shadow | Duskveil | Nocthyrr, the Eclipse |
 | Celestial | The Halo Reach | Astraelis, the Star Phoenix |
-| Ice | Rimeholt | — |
+| Ice | Rimeholt | Hrimvald, the Frost Wyrm |
 | Earth | Grauldeep | — |
-| Wind | Zephyr Steppes | — |
+| Wind | Zephyr Steppes | Aerovant, the Gale Dragon |
 | Arcane | The Glyphspire | Aurelith, the Shard Sovereign |
 
-**Rarity distribution (100 total):** 40 Common · 25 Uncommon · 18 Rare · 11 Epic · 6 Mythic. Every element has 4 Commons. Elements without a Mythic get an extra Uncommon or Epic instead.
+**Rarity distribution (120 total):** 46 Common · 30 Uncommon · 23 Rare · 13 Epic · 8 Mythic.
+
+**#001–#100, the core set:** 10 creatures per element.
+
+**#101–#120, Mythic Legends:** 20 creatures from myth and folklore, spread across the elements: Hexling (apprentice witch), Boolet (bedsheet ghost), Grimalkyn (witch's cat), Mawfin (baby anglerfish), Wrapscallion (mummy), Cindrake (dragon hatchling), Tribark (three-headed hound), Banshriek (banshee), Ghastmire (bog ghost), Taurock (minotaur), Basilix (crowned basilisk), Kitsuna (nine-tailed fox), Sirensong (siren), Bramblehag (swamp witch), Lunarfang (werewolf), Mossdrake (forest dragon), Krakoth (kraken), Gravewarden (ghost knight), and two new Mythic dragons: Hrimvald, the Frost Wyrm (Ice) and Aerovant, the Gale Dragon (Wind).
 
 **Stat bands** (ATK and DEF are each 0–100, with total power rising by tier): Common 14–36 · Uncommon 30–58 · Rare 48–74 · Epic 68–88 · Mythic 86–99.
 
@@ -136,9 +140,9 @@ Each Founder also has a species name, a size, a personality and a lore line in `
 - **Epic titans:** lions, hydras, tree-giants, mammoths, wraiths.
 - **Mythic dragons and legends.**
 
-The illustration engine has 10 body plans (blob, quadruped, serpent, bird, dragon, golem, sprite, fish, bug, jelly) plus about 40 feature parts (manes, antlers, ram horns, tusks, shells, mushroom caps, a spellbook, a mimic chest, a clock-face, nebula cores, cloaks…).
+The illustration engine has 14 body plans (blob, quadruped, serpent, bird, dragon, golem, sprite, fish, bug, jelly, witch, ghost, siren, kraken), each with several variants, plus about 40 feature parts (manes, antlers, ram horns, tusks, shells, mushroom caps, a spellbook, a mimic chest, a clock-face, nebula cores, cloaks…).
 
-All 100 are written and playable in v0.1: names, stats, abilities, personalities and descriptions.
+All 120 are written and playable: names, stats, abilities, personalities and descriptions.
 
 ## 7. Technical plan
 
