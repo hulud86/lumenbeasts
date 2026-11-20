@@ -219,6 +219,47 @@ window.BattleUI = (function () {
     return `<div class="need-team panel" role="status"><div class="need-ico">⚔</div><div class="need-body"><b>You can't battle yet</b><span>You need at least ${TEAM_MIN} different creatures to form a team. You have ${n}, so ${left === 1 ? "1 more" : left + " more"} to go. Open Shard Packs to find them.</span></div><a class="btn btn-gold btn-sm" href="#packs">${packs ? `Open packs (${packs} ready)` : "Go to packs"}</a></div>`;
   }
 
+  /* ---------- winning tips ---------- */
+  const counters = el => Object.keys(B.STRONG).filter(k => B.STRONG[k].includes(el));   // elements that beat el
+  const beatenBy = el => B.STRONG[el];                                                  // elements el beats
+  const elList = els => els.map(x => `${icon(x, 14)} ${EL[x].label}`).join(" and ");
+  function levelable() { const S = G().state; return Object.keys(S.owned).map(Number).filter(id => G().canLevel(id)); }
+  function bestCounters(isle, n = 3) {
+    const S = G().state, el = B.ISLES[isle].el, good = counters(el);
+    return Object.keys(S.owned).map(Number).map(id => byId[id]).filter(c => good.includes(c.element))
+      .sort((a, b) => score(b, { isle }) - score(a, { isle })).slice(0, n);
+  }
+  function goodAllies(isle) {
+    const S = G().state, good = counters(B.ISLES[isle].el);
+    return SUP.allies.filter(a => S.support[a.id] && (!a.passive.el || good.includes(a.passive.el)));
+  }
+  function isleTipsHTML(isle) {
+    const el = B.ISLES[isle].el, picks = bestCounters(isle), lv = levelable(), allies = goodAllies(isle);
+    const tip = (ico, title, body) => `<div class="tip"><span class="tip-ico">${ico}</span><div><b>${title}</b><span>${body}</span></div></div>`;
+    const pickBody = picks.length
+      ? `Your best counters: ${picks.map(c => `<span class="tip-mon" style="--rc:${RAR[c.rarity].color}"><img src="${Art().uri(c)}" alt="">${esc(c.name)}</span>`).join(" ")}`
+      : `You don't own any yet. Look for ${elList(counters(el))} creatures in packs.`;
+    return `<details class="tips panel" ${G().state.battle.wins < 6 ? "open" : ""}><summary>💡 Tips for winning here</summary><div class="tip-grid">
+${tip("⚔", `Bring ${elList(counters(el))} creatures`, `They deal 1.5× damage to ${EL[el].label} enemies. Avoid ${elList(beatenBy(el))} creatures, which take extra damage here. ${pickBody}`)}
+${tip("⬆", lv.length ? `${lv.length} creature${lv.length > 1 ? "s" : ""} can level up now` : "Level up your best creatures", lv.length ? `Each level adds 6% Attack and Defense. <a href="#collection">Open your collection</a> and tap a creature to level it.` : `Each level adds 6% Attack and Defense. Duplicate cards plus Shard Dust pay for it, so replay cleared battles for Dust.`)}
+${tip("🤝", "Pick an Ally that fits your team", allies.length ? `Good choices here: ${allies.map(a => `<b>${esc(a.name)}</b> (${esc(passiveText(a))})`).join(", ")}. Allies only boost creatures of their element, unless they boost all creatures.` : `Allies only boost creatures of their own element, unless they boost all creatures. Match your Ally to your team.`)}
+${tip("✨", "Save Abilities and Items for big moments", `Abilities recharge for 3 turns, so open with one and swap out of bad matchups. Use a Healing Draught before a creature faints, not after.`)}
+</div></details>`;
+  }
+  function lossTipsHTML(R) {
+    const out = [], el = B.ISLES[R.isle].el, team = R.team.map(id => byId[id]);
+    const weak = team.filter(c => B.elMult(el, c.element) > 1), strong = team.filter(c => B.elMult(c.element, el) > 1);
+    if (weak.length) out.push(`<b>${weak.map(c => esc(c.name)).join(", ")}</b> ${weak.length > 1 ? "were" : "was"} weak against ${EL[el].label}. Try ${elList(counters(el))} creatures instead.`);
+    else if (!strong.length) out.push(`None of your team had an advantage. ${elList(counters(el))} creatures deal 1.5× damage here.`);
+    const better = bestCounters(R.isle).filter(c => !R.team.includes(c.id));
+    if (better.length) out.push(`You own ${better.map(c => `<b>${esc(c.name)}</b>`).join(", ")}, which ${better.length > 1 ? "counter" : "counters"} this isle.`);
+    const lv = levelable();
+    if (lv.length) out.push(`${lv.length} of your creatures can level up right now. <a href="#collection">Level them up</a> for +6% Attack and Defense per level.`);
+    else out.push(`Replay battles you've already won to earn Shard Dust, then level up your favorites.`);
+    if (!R.ally) out.push(`You went in without an Ally. Even a small boost helps.`);
+    return `<div class="tips panel loss-tips"><h3>💡 How to win next time</h3><ul>${out.map(x => `<li>${x}</li>`).join("")}</ul></div>`;
+  }
+
   /* ---------- map ---------- */
   function mapHTML() {
     const S = G().state;
@@ -247,7 +288,7 @@ ${needNotice()}<div class="battle-stats panel"><span><b>${S.battle.wins}</b> win
     }).join("");
     return `<button class="btn btn-ghost btn-sm" data-b-back="map">← All isles</button>${needNotice()}
 <h1 class="h-display" style="margin-top:12px">${icon(I.el, 26)} ${esc(e.isle)}</h1><p class="sub">${e.label} creatures are strong against ${B.STRONG[I.el].map(x => EL[x].label).join(" and ")}, and weak to ${Object.keys(B.STRONG).filter(k => B.STRONG[k].includes(I.el)).map(x => EL[x].label).join(" and ")}. Bring creatures that beat ${e.label}.</p>
-<div class="stage-list">${rows}</div>`;
+${isleTipsHTML(ui.isle)}<div class="stage-list">${rows}</div>`;
   }
 
   /* ---------- prep ---------- */
@@ -335,7 +376,7 @@ ${F.reviveMenu ? `<div class="swapmenu panel"><b>Revive:</b> ${F.p.team.map((f, 
 <p>${R.won ? `You beat <b>${esc(R.name)}</b>.` : `<b>${esc(R.name)}</b> won this time. Try different creatures. Element matchups make a big difference.`}</p>
 ${R.won ? `<div class="summary-stats">${R.dust ? `<div class="rchip" style="--rc:#ffc94a"><div class="t">Shard Dust</div><div class="v">+${R.dust}</div></div>` : ""}${R.packs ? `<div class="rchip" style="--rc:#ff6fd0"><div class="t">Bonus packs</div><div class="v">+${R.packs}</div></div>` : ""}${R.first ? `<div class="rchip" style="--rc:#5fd08a"><div class="t">First clear</div><div class="v">✓</div></div>` : ""}</div>` : ""}
 ${R.newAch && R.newAch.length ? `<div class="notice" style="background:rgba(255,201,74,.1);border-color:rgba(255,201,74,.4);color:#ffe7a8">🏆 Unlocked: ${R.newAch.map(esc).join(", ")}. <a href="#achievements">Claim rewards</a></div>` : ""}
-<div class="summary-actions"><button class="btn btn-gold" data-b-back="isle">Continue</button><button class="btn btn-ghost" data-b-retry>${R.won ? "Battle again" : "Try again"}</button></div></div>`;
+${R.won ? "" : lossTipsHTML(R)}<div class="summary-actions"><button class="btn btn-gold" data-b-back="isle">Continue</button><button class="btn btn-ghost" data-b-retry>${R.won ? "Battle again" : "Try again"}</button></div></div>`;
   }
 
   function view() {
@@ -424,7 +465,7 @@ ${R.newAch && R.newAch.length ? `<div class="notice" style="background:rgba(255,
     } else S.battle.losses++;
     G().save();
     const newAch = G().unlockedIds().filter(id => !before.includes(id)).map(id => G().ACH.find(a => a.id === id).name);
-    ui.result = { won, name: info.name, dust, packs, first, newAch };
+    ui.result = { won, name: info.name, dust, packs, first, newAch, isle: info.isle, team: F.p.team.map(f => f.cr.id), ally: F.p.ally ? F.p.ally.id : null };
     ui.busy = false;
     setTimeout(() => {
       if (won) { U().flash("rgba(255,201,74,.6)"); U().banner("Victory!", "#ffc94a"); U().Sfx.play("mythic"); }
@@ -498,6 +539,13 @@ ${R.newAch && R.newAch.length ? `<div class="notice" style="background:rgba(255,
 <section><h3>Each turn</h3><p><b>Attack</b> for a basic strike, or use your creature's <b>Ability</b>, its signature move, which then recharges for ${3} turns. You can also use an Item, your Ally's Command, or swap creatures. Swapping uses your turn, unless it's a forced swap after a creature faints.</p></section>
 <section><h3>Element matchups</h3><p>Strong matchups deal 1.5× damage and weak ones deal 0.67×.</p><div class="match-table">${Object.entries(B.STRONG).map(([k, v]) => `<div>${Art().icon(k, 14)} <b>${EL[k].label}</b> beats ${v.map(x => Art().icon(x, 14) + " " + EL[x].label).join(", ")}</div>`).join("")}</div></section>
 <section><h3>Status effects</h3><p>🔥 Burn: loses HP each turn · ❄ Frozen / ⚡ Stunned: skips a turn · ▼ ATK: deals less damage · 🛡 Shield: halves the next hits · 💨 Evasive: dodges the next attack.</p></section>
+<section><h3>Tips for winning</h3><ul class="help-tips">
+<li><b>Counter the isle.</b> Each isle is mostly one element. Check the matchup chart and bring creatures that beat it.</li>
+<li><b>Level up.</b> Duplicate cards plus Shard Dust raise a creature's level, adding 6% Attack and Defense each time (up to Lv 10).</li>
+<li><b>Farm Shard Dust.</b> Replaying battles you've won pays a little Dust, and duplicate pulls give more.</li>
+<li><b>Match your Ally.</b> Most Allies only boost their own element. Sister Sefa and Commander Rowan boost everyone.</li>
+<li><b>Swap smartly.</b> If your creature is weak to the enemy, swap to one that resists it.</li>
+<li><b>Time your Items.</b> Heal before a creature faints, and save Ember Bombs and Frost Flasks for tough enemies.</li></ul></section>
 <section><h3>Rewards</h3><p>Your first win against each opponent earns Shard Dust. Isle leaders also give a pack, and guardians give 2 packs. Replays earn a little Dust. Losing costs nothing.</p></section></div>`;
   }
   return { view, ui, reset: () => { if (ui.screen === "fight" && ui.fight && !ui.fight.over) return; } };

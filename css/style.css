@@ -574,3 +574,22 @@ img[src^="assets/allies/"], img[src^="assets/allies/sil/"] { object-fit: cover; 
 .need-body { flex: 1; display: flex; flex-direction: column; gap: 3px; font-size: 14px; color: var(--muted); }
 .need-body b { color: #ffe7b0; font-size: 15px; }
 @media (max-width: 560px) { .need-team { flex-wrap: wrap; } .need-team .btn { width: 100%; text-align: center; } }
+
+/* Battle tips */
+.tips { padding: 0; margin: 0 0 16px; border: 1px solid rgba(126, 240, 255, .25); }
+.tips > summary { cursor: pointer; list-style: none; padding: 12px 16px; font-weight: 800; color: #bff6ff; }
+.tips > summary::-webkit-details-marker { display: none; }
+.tips > summary::after { content: "▾"; float: right; opacity: .7; transition: transform .2s; }
+.tips:not([open]) > summary::after { transform: rotate(-90deg); }
+.tip-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; padding: 0 14px 14px; }
+.tip { display: flex; gap: 10px; padding: 10px 12px; border-radius: 12px; background: rgba(255, 255, 255, .04); }
+.tip-ico { flex: none; width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; background: rgba(126, 240, 255, .14); }
+.tip div { display: flex; flex-direction: column; gap: 4px; font-size: 13.5px; color: var(--muted); line-height: 1.45; }
+.tip b { color: #eef; font-size: 14px; }
+.tip a, .loss-tips a { color: #7ef0ff; font-weight: 700; }
+.tip-mon { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px 2px 2px; margin: 2px 2px 0 0; border-radius: 99px; background: rgba(0, 0, 0, .3); border: 1px solid var(--rc); color: #eef; font-weight: 700; font-size: 12.5px; }
+.tip-mon img { width: 20px; height: 20px; border-radius: 50%; object-fit: cover; }
+.loss-tips { padding: 14px 18px; margin: 14px 0; text-align: left; }
+.loss-tips h3 { margin: 0 0 8px; font-size: 16px; color: #bff6ff; }
+.loss-tips ul, .help-tips { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 6px; font-size: 14px; color: var(--muted); }
+.loss-tips b, .help-tips b { color: #eef; }
