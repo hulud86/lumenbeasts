@@ -203,6 +203,16 @@ window.BattleUI = (function () {
   const icon = (el, s = 16) => el ? Art().icon(el, s) : "✦";
   const mPhrase = m => m > 1 ? "Strong matchup!" : m < 1 ? "Weak matchup…" : "";
 
+  /* ---------- not enough creatures ---------- */
+  const TEAM_MIN = 3;
+  const ownedCount = () => Object.keys(G().state.owned).length;
+  const canBattle = () => ownedCount() >= TEAM_MIN;
+  function needNotice() {
+    if (canBattle()) return "";
+    const n = ownedCount(), left = TEAM_MIN - n, packs = G().packsAvailable();
+    return `<div class="need-team panel" role="status"><div class="need-ico">⚔</div><div class="need-body"><b>You can't battle yet</b><span>You need at least ${TEAM_MIN} different creatures to form a team. You have ${n}, so ${left === 1 ? "1 more" : left + " more"} to go. Open Shard Packs to find them.</span></div><a class="btn btn-gold btn-sm" href="#packs">${packs ? `Open packs (${packs} ready)` : "Go to packs"}</a></div>`;
+  }
+
   /* ---------- map ---------- */
   function mapHTML() {
     const S = G().state;
@@ -214,7 +224,7 @@ window.BattleUI = (function () {
 <span class="isle-prog">${[0, 1, 2, 3].map(st => `<i class="${S.battle.cleared[B.keyOf(i, st)] ? "on" : ""}"></i>`).join("")}<b>${open ? (done === 4 ? "Conquered" : `${done}/4 cleared`) : "Locked"}</b></span></span></button>`;
     }).join("");
     return `<h1 class="h-display">Battle</h1><p class="sub">Journey across the ten isles of Vael. Beat each isle's trainers and leader, then challenge its guardian. Wins earn Shard Dust and packs.</p>
-<div class="battle-stats panel"><span><b>${S.battle.wins}</b> wins</span><span><b>${Object.keys(S.battle.cleared).filter(k => k.endsWith("-3")).length}</b>/10 guardians</span><button class="btn btn-ghost btn-sm" data-b-help>How battles work</button></div>
+${needNotice()}<div class="battle-stats panel"><span><b>${S.battle.wins}</b> wins</span><span><b>${Object.keys(S.battle.cleared).filter(k => k.endsWith("-3")).length}</b>/10 guardians</span><button class="btn btn-ghost btn-sm" data-b-help>How battles work</button></div>
 <div class="isle-grid">${tiles}</div>`;
   }
   function isleHTML() {
@@ -227,9 +237,9 @@ window.BattleUI = (function () {
 <div class="stage-body"><div class="stage-kind">${info.boss ? "Isle Guardian" : info.leaderStage ? "Isle Leader" : "Trainer"}</div><h3>${esc(info.name)}</h3>
 <div class="stage-team">${info.team.map(id => { const c = byId[id], seen = !!S.owned[id]; return `<span class="mini-mon" title="${seen ? esc(c.name) : "Unknown"}" style="--rc:${RAR[c.rarity].color}"><img src="${seen ? Art().uri(c) : Art().silUri(c)}" alt=""></span>`; }).join("")}<span class="stage-lvl">Power ×${info.mult.toFixed(2)}</span></div>
 <div class="stage-reward">${cleared ? "✓ Cleared · replay for a little Shard Dust" : `First win: ${info.reward.dust} Shard Dust${info.reward.packs ? ` + ${info.reward.packs} pack${info.reward.packs > 1 ? "s" : ""}` : ""}`}</div></div>
-<button class="btn ${open ? "btn-gold" : "btn-ghost"} btn-sm" data-b-stage="${st}" ${open ? "" : "disabled"}>${open ? (cleared ? "Replay" : "Battle") : "Locked"}</button></div>`;
+<button class="btn ${open && canBattle() ? "btn-gold" : "btn-ghost"} btn-sm" data-b-stage="${st}" ${open && canBattle() ? "" : "disabled"} ${open && !canBattle() ? 'title="You need at least 3 creatures to battle"' : ""}>${open ? (cleared ? "Replay" : "Battle") : "Locked"}</button></div>`;
     }).join("");
-    return `<button class="btn btn-ghost btn-sm" data-b-back="map">← All isles</button>
+    return `<button class="btn btn-ghost btn-sm" data-b-back="map">← All isles</button>${needNotice()}
 <h1 class="h-display" style="margin-top:12px">${icon(I.el, 26)} ${esc(e.isle)}</h1><p class="sub">${e.label} creatures are strong against ${B.STRONG[I.el].map(x => EL[x].label).join(" and ")}, and weak to ${Object.keys(B.STRONG).filter(k => B.STRONG[k].includes(I.el)).map(x => EL[x].label).join(" and ")}. Bring creatures that beat ${e.label}.</p>
 <div class="stage-list">${rows}</div>`;
   }
@@ -257,7 +267,7 @@ window.BattleUI = (function () {
     const allyOpts = SUP.allies.filter(a => S.support[a.id]);
     const itemOpts = SUP.items.filter(a => S.support[a.id]);
     return `<button class="btn btn-ghost btn-sm" data-b-back="isle">← Back</button>
-<h1 class="h-display" style="margin-top:12px">Prepare for battle</h1><p class="sub">Opponent: <b>${esc(info.name)}</b> · ${info.team.length} creatures · mostly ${EL[foeEl].label}. Pick 3 creatures, 1 Ally and up to 2 Items.</p>
+<h1 class="h-display" style="margin-top:12px">Prepare for battle</h1><p class="sub">Opponent: <b>${esc(info.name)}</b> · ${info.team.length} creatures · mostly ${EL[foeEl].label}. Pick 3 creatures, 1 Ally and up to 2 Items.</p>${needNotice()}
 <div class="prep-grid">
  <div class="panel prep-team"><h3>Your team</h3><div class="tslots">${[0, 1, 2].map(slot).join("")}</div>
   <h3>Ally</h3><div class="sup-pick">${allyOpts.map(a => `<button class="sup-opt ${P.ally === a.id ? "on" : ""}" data-b-ally="${a.id}" title="${esc(a.command.text)}"><img src="${Art().uri(a)}" alt=""><span><b>${esc(a.name)}</b><small>${esc(passiveText(a))}</small></span></button>`).join("") || `<p class="locked-note">No Allies yet. Find them in packs.</p>`}</div>
@@ -454,7 +464,7 @@ ${R.newAch && R.newAch.length ? `<div class="notice" style="background:rgba(255,
     const d = t.dataset, S = G().state;
     if (d.bIsle !== undefined) { ui.isle = +d.bIsle; ui.screen = "isle"; rerender(); return; }
     if (d.bBack !== undefined) { ui.screen = d.bBack; ui.fight = null; rerender(); return; }
-    if (d.bStage !== undefined) { startPrep(+d.bStage); rerender(); return; }
+    if (d.bStage !== undefined) { if (!canBattle()) { rerender(); return; } startPrep(+d.bStage); rerender(); return; }
     if (d.bPick !== undefined) { const id = +d.bPick, P = ui.prep; if (P.team.includes(id)) P.team = P.team.filter(x => x !== id); else if (P.team.length < 3) P.team.push(id); else { P.team[2] = id; } rerender(); return; }
     if (d.bUnpick !== undefined) { ui.prep.team = ui.prep.team.filter(x => x !== +d.bUnpick); rerender(); return; }
     if (d.bAlly !== undefined) { ui.prep.ally = ui.prep.ally === d.bAlly ? null : d.bAlly; rerender(); return; }
