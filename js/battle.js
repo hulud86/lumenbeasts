@@ -125,39 +125,44 @@ window.Battle = (function () {
 
   /* ---------------- story mode ---------------- */
   const ISLES = [
-    { el: "nature", leader: "A01", guardian: 37, names: ["Sprout-keeper Fen", "Wanderer Juno"] },
-    { el: "water", leader: "A02", guardian: 28, names: ["Deckhand Ollie", "Pearl Diver Nami"] },
-    { el: "fire", leader: "A03", guardian: 19, names: ["Ash Scout Ren", "Coal Runner Tess"] },
-    { el: "wind", leader: "A09", guardian: 120, names: ["Kite Kid Bo", "Cloud Herder Ila"] },
-    { el: "earth", leader: "A08", guardian: 8, names: ["Tunnel Rat Dex", "Geode Hunter Pia"] },
-    { el: "electric", leader: "A04", guardian: 46, names: ["Wire Tinker Max", "Storm Watcher Vel"] },
-    { el: "ice", leader: "A07", guardian: 119, names: ["Snow Scout Lumi", "Ice Fisher Odd"] },
-    { el: "shadow", leader: "A05", guardian: 73, names: ["Lamplighter Wren", "Grave Sitter Mort"] },
-    { el: "celestial", leader: "A06", guardian: 55, names: ["Star Counter Ada", "Comet Chaser Sol"] },
-    { el: "arcane", leader: "A10", guardian: 10, names: ["Rune Scribe Ivo", "Glyph Weaver Nell"] }
+    { el: "nature", leader: "A01", guardian: 37, names: ["Sprout-keeper Fen", "Wanderer Juno", "Herbalist Moss", "Beekeeper Hale", "Thorn Warden Isa"] },
+    { el: "water", leader: "A02", guardian: 28, names: ["Deckhand Ollie", "Pearl Diver Nami", "Net Mender Cal", "Tide Reader Suri", "Harbor Guard Bram"] },
+    { el: "fire", leader: "A03", guardian: 19, names: ["Ash Scout Ren", "Coal Runner Tess", "Bellows Boy Kip", "Ember Dancer Lia", "Forge Guard Holt"] },
+    { el: "wind", leader: "A09", guardian: 120, names: ["Kite Kid Bo", "Cloud Herder Ila", "Glider Pilot Rafe", "Wind Caller Yara", "Sky Ranger Teo"] },
+    { el: "earth", leader: "A08", guardian: 8, names: ["Tunnel Rat Dex", "Geode Hunter Pia", "Quarry Hand Gus", "Fossil Seeker Rhea", "Deep Delver Brom"] },
+    { el: "electric", leader: "A04", guardian: 46, names: ["Wire Tinker Max", "Storm Watcher Vel", "Spark Courier Zed", "Coil Smith Nova", "Thunder Monk Arlo"] },
+    { el: "ice", leader: "A07", guardian: 119, names: ["Snow Scout Lumi", "Ice Fisher Odd", "Sled Driver Kaia", "Frost Sculptor Eir", "Glacier Guard Rune"] },
+    { el: "shadow", leader: "A05", guardian: 73, names: ["Lamplighter Wren", "Grave Sitter Mort", "Mask Maker Vesper", "Night Courier Silas", "Crypt Keeper Hollis"] },
+    { el: "celestial", leader: "A06", guardian: 55, names: ["Star Counter Ada", "Comet Chaser Sol", "Moon Weaver Lyra", "Sun Priest Orin", "Astral Knight Celeste"] },
+    { el: "arcane", leader: "A10", guardian: 10, names: ["Rune Scribe Ivo", "Glyph Weaver Nell", "Potion Taster Bix", "Mirror Mage Sera", "Archmage Talon"] }
   ];
-  const keyOf = (isle, stage) => `${ISLES[isle].el}-${stage}`;
+  // Each isle: 5 trainers, then the Isle Leader, then the Isle Guardian.
+  const STAGES = 7, LEADER = 5, BOSS = 6;
+  const SUFFIX = ["0", "1", "t2", "t3", "t4", "L", "G"]; // keys stay compatible with older 4-stage saves
+  const keyOf = (isle, stage) => `${ISLES[isle].el}-${SUFFIX[stage]}`;
   function seeded(seed) { let a = seed * 9301 + 49297; return () => { a = (a * 9301 + 49297) % 233280; return a / 233280; }; }
   function stageInfo(isle, stage) {
-    const I = ISLES[isle], d = isle * 4 + stage, r = seeded(isle * 31 + stage * 7 + 3);
-    const mult = +(0.7 + d * 0.0105).toFixed(3);
-    const maxRar = d < 6 ? ["common", "uncommon"] : d < 16 ? ["common", "uncommon", "uncommon", "rare"] : d < 28 ? ["uncommon", "uncommon", "rare", "epic"] : ["uncommon", "rare", "rare", "epic"];
+    const I = ISLES[isle], d = isle * STAGES + stage, r = seeded(isle * 31 + stage * 7 + 3);
+    const boss = stage === BOSS, leaderStage = stage === LEADER;
+    const mult = +((1.02 + isle * 0.01) * (1 + Math.min(stage, LEADER) * 0.055)).toFixed(3); // ramps up within each isle
+    const maxRar = isle < 1 ? ["common", "uncommon", "uncommon"] : isle < 4 ? ["common", "uncommon", "uncommon", "rare"] : isle < 7 ? ["uncommon", "uncommon", "rare", "epic"] : ["uncommon", "rare", "rare", "epic"];
     const pick = (pred) => { const pool = ALL.filter(pred); return pool[Math.floor(r() * pool.length)]; };
-    const size = d < 2 ? 2 : 3, team = [];
+    const size = boss ? (isle < 5 ? 2 : 3) : stage === 0 ? 2 : 3, team = [];
+    const bump = boss || leaderStage ? .7 : stage >= 2 ? .35 : 0;
     const used = new Set([I.guardian]);
-    for (let i = 0; i < (stage === 3 ? 2 : size); i++) {
-      const rar = maxRar[Math.min(maxRar.length - 1, Math.floor(r() * maxRar.length + (stage >= 2 ? .6 : 0)))];
+    for (let i = 0; i < size; i++) {
+      const rar = maxRar[Math.min(maxRar.length - 1, Math.floor(r() * maxRar.length + bump))];
       let c = pick(x => x.rarity === rar && !used.has(x.id) && (r() < .7 ? x.element === I.el : true)) || pick(x => x.rarity === rar && !used.has(x.id));
       used.add(c.id); team.push(c.id);
     }
-    if (stage === 3) team.push(I.guardian);
+    if (boss) team.push(I.guardian);
     const leader = SUP.byId[I.leader];
-    const name = stage < 2 ? I.names[stage] : stage === 2 ? `${leader.role} ${leader.name}` : `${byId[I.guardian].name}${byId[I.guardian].title ? ", " + byId[I.guardian].title : ""}`;
-    return { key: keyOf(isle, stage), isle, stage, d, mult: stage === 3 ? mult * 1.04 : mult, team, name, ally: stage >= 2 ? I.leader : null,
-      items: d >= 10 ? ["I01"] : [], boss: stage === 3, leaderStage: stage === 2,
-      reward: { dust: 15 + d * 4 + (stage === 3 ? 100 : 0), packs: stage === 3 ? 2 : stage === 2 ? 1 : 0 } };
+    const name = stage < LEADER ? I.names[stage] : leaderStage ? `${leader.role} ${leader.name}` : `${byId[I.guardian].name}${byId[I.guardian].title ? ", " + byId[I.guardian].title : ""}`;
+    return { key: keyOf(isle, stage), isle, stage, d, mult: boss ? +(mult * (isle < 5 ? .84 : .8)).toFixed(3) : mult, team, name, ally: stage >= LEADER ? I.leader : null,
+      items: d >= 14 ? ["I01"] : [], boss, leaderStage,
+      reward: { dust: 12 + Math.round(d * 2.4) + (boss ? 100 : leaderStage ? 30 : 0), packs: boss ? 2 : leaderStage ? 1 : 0 } };
   }
-  const isleOpen = (S, isle) => isle === 0 || !!S.battle.cleared[keyOf(isle - 1, 3)];
+  const isleOpen = (S, isle) => isle === 0 || !!S.battle.cleared[keyOf(isle - 1, BOSS)];
   const stageOpen = (S, isle, stage) => isleOpen(S, isle) && (stage === 0 || !!S.battle.cleared[keyOf(isle, stage - 1)]);
 
   function newBattle(info, playerTeamIds, allyId, itemIds, levels) {
@@ -185,7 +190,7 @@ window.Battle = (function () {
     return false;
   }
 
-  return { STRONG, elMult, ISLES, stageInfo, isleOpen, stageOpen, keyOf, newBattle, makeFighter, hit, attack, useAbility, useItem, useCommand, endRound, aiChoose, autoBattle };
+  return { STRONG, elMult, ISLES, STAGES, LEADER, BOSS, stageInfo, isleOpen, stageOpen, keyOf, newBattle, makeFighter, hit, attack, useAbility, useItem, useCommand, endRound, aiChoose, autoBattle };
 })();
 
 /* =========================================================
@@ -200,6 +205,7 @@ window.BattleUI = (function () {
   const EL = C.elements, RAR = C.rarities;
   const ui = { screen: "map", isle: 0, stage: 0, prep: null, fight: null, busy: false, result: null, prepFilter: "all" };
 
+  const stagesArr = () => Array.from({ length: B.STAGES }, (_, i) => i);
   const icon = (el, s = 16) => el ? Art().icon(el, s) : "✦";
   const mPhrase = m => m > 1 ? "Strong matchup!" : m < 1 ? "Weak matchup…" : "";
 
@@ -217,19 +223,19 @@ window.BattleUI = (function () {
   function mapHTML() {
     const S = G().state;
     const tiles = B.ISLES.map((I, i) => {
-      const open = B.isleOpen(S, i), done = [0, 1, 2, 3].filter(st => S.battle.cleared[B.keyOf(i, st)]).length, g = byId[I.guardian], e = EL[I.el];
-      return `<button class="isle ${open ? "" : "locked"} ${done === 4 ? "done" : ""}" data-b-isle="${i}" style="--el:${e.main};--el-dark:${e.dark}" ${open ? "" : "disabled"}>
+      const open = B.isleOpen(S, i), done = stagesArr().filter(st => S.battle.cleared[B.keyOf(i, st)]).length, g = byId[I.guardian], e = EL[I.el];
+      return `<button class="isle ${open ? "" : "locked"} ${done === B.STAGES ? "done" : ""}" data-b-isle="${i}" style="--el:${e.main};--el-dark:${e.dark}" ${open ? "" : "disabled"}>
 <span class="isle-art"><img src="${Art().uri(g)}" alt="" class="${open ? "" : "sil"}"></span>
 <span class="isle-body"><span class="isle-no">Isle ${i + 1}</span><span class="isle-name">${icon(I.el, 16)} ${esc(e.isle)}</span>
-<span class="isle-prog">${[0, 1, 2, 3].map(st => `<i class="${S.battle.cleared[B.keyOf(i, st)] ? "on" : ""}"></i>`).join("")}<b>${open ? (done === 4 ? "Conquered" : `${done}/4 cleared`) : "Locked"}</b></span></span></button>`;
+<span class="isle-prog">${stagesArr().map(st => `<i class="${S.battle.cleared[B.keyOf(i, st)] ? "on" : ""}"></i>`).join("")}<b>${open ? (done === B.STAGES ? "Conquered" : `${done}/${B.STAGES} cleared`) : "Locked"}</b></span></span></button>`;
     }).join("");
     return `<h1 class="h-display">Battle</h1><p class="sub">Journey across the ten isles of Vael. Beat each isle's trainers and leader, then challenge its guardian. Wins earn Shard Dust and packs.</p>
-${needNotice()}<div class="battle-stats panel"><span><b>${S.battle.wins}</b> wins</span><span><b>${Object.keys(S.battle.cleared).filter(k => k.endsWith("-3")).length}</b>/10 guardians</span><button class="btn btn-ghost btn-sm" data-b-help>How battles work</button></div>
+${needNotice()}<div class="battle-stats panel"><span><b>${S.battle.wins}</b> wins</span><span><b>${Object.keys(S.battle.cleared).filter(k => k.endsWith("-G")).length}</b>/10 guardians</span><button class="btn btn-ghost btn-sm" data-b-help>How battles work</button></div>
 <div class="isle-grid">${tiles}</div>`;
   }
   function isleHTML() {
     const S = G().state, I = B.ISLES[ui.isle], e = EL[I.el];
-    const rows = [0, 1, 2, 3].map(st => {
+    const rows = stagesArr().map(st => {
       const info = B.stageInfo(ui.isle, st), open = B.stageOpen(S, ui.isle, st), cleared = !!S.battle.cleared[info.key];
       const leader = info.ally ? SUP.byId[info.ally] : null;
       return `<div class="stage panel ${open ? "" : "locked"} ${info.boss ? "boss" : ""}" style="--el:${e.main}">

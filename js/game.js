@@ -42,6 +42,10 @@ window.Game = (function () {
         if (!data.support) S.support = starterKit();      // older saves get the starter kit
         if (!data.levels) S.levels = {};
         if (!data.battle) S.battle = { cleared: {}, wins: 0, losses: 0, team: null };
+        // v2 story: 7 stages per isle. Old leader (-2) and guardian (-3) wins carry over.
+        if (S.battle && S.battle.cleared) for (const k of Object.keys(S.battle.cleared)) {
+          const m = k.match(/^(.*)-(2|3)$/); if (m) { S.battle.cleared[`${m[1]}-${m[2] === "2" ? "L" : "G"}`] = S.battle.cleared[k]; delete S.battle.cleared[k]; }
+        }
       } else S = fresh();
     } catch (e) { storageOK = false; S = fresh(); }
     return S;
@@ -170,7 +174,7 @@ window.Game = (function () {
     { id: "levels-25", name: "Devoted Trainer", desc: "Gain 25 levels across your creatures.", icon: "heart", goal: 25, prog: levelsGained, reward: { dust: 200 } },
     { id: "copies-5", name: "Best Friends", desc: "Own 5 copies of one creature.", icon: "heart", goal: 5, prog: () => Math.max(0, ...Object.values(S.owned)), reward: { dust: 40 } }
   ];
-  const guardiansBeaten = () => Object.keys(S.battle.cleared).filter(k => k.endsWith("-3")).length;
+  const guardiansBeaten = () => Object.keys(S.battle.cleared).filter(k => k.endsWith("-G")).length;
   const achStatus = a => { const p = Math.min(a.goal, a.prog()); return { p, done: p >= a.goal, claimed: !!S.achievements[a.id] }; };
   const unlockedIds = () => ACH.filter(a => achStatus(a).done).map(a => a.id);
   const claimable = () => ACH.filter(a => { const s = achStatus(a); return s.done && !s.claimed; }).length;
