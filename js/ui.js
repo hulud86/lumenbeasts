@@ -476,12 +476,13 @@ ${s.newAchievements.length ? `<div class="notice" style="background:rgba(255,201
   function openSettings() {
     openModal(`<div class="settings"><h2>Settings</h2>
 <section><h3>Sound</h3><label class="toggle"><input type="checkbox" id="setSound" ${G.state.sound ? "checked" : ""}> Play sound effects</label></section>
-<section><h3>Back up or move your collection</h3><p>Your collection is saved in this browser only. Copy this code to back it up, or paste it on another device to continue there.</p>
+${window.Cloud && Cloud.enabled ? `<section><h3>Cloud save</h3>${Cloud.signedIn ? "<p>You're signed in, so your collection saves online automatically.</p>" : "<p>Sign in to save your collection online and play on any device.</p>"}<div class="row-btns"><button class="btn btn-gold btn-sm" id="openCloud">${Cloud.signedIn ? "Manage account" : "Sign in"}</button></div></section>` : ""}
+<section><h3>Manual backup</h3><p>Copy this code to back up this device's collection, or paste a code to restore one. ${window.Cloud && Cloud.signedIn ? "Restoring replaces your cloud save too." : ""}</p>
 <textarea id="saveCode" readonly>${G.exportCode()}</textarea><div class="row-btns" style="margin-top:8px"><button class="btn btn-ghost btn-sm" id="copyCode">Copy code</button></div>
 <p style="margin-top:12px">Restore from a code:</p><textarea id="importCode" placeholder="Paste a save code here"></textarea><div class="row-btns" style="margin-top:8px"><button class="btn btn-ghost btn-sm" id="doImport">Restore</button></div></section>
-<section><h3>How saving works</h3><p>This version keeps everything in your browser's local storage. That keeps it free and simple, but it means: clearing browser data erases progress, collections don't sync between devices automatically, and a determined player could edit their save or change their clock. Cloud accounts would fix these later.</p></section>
+<section><h3>How saving works</h3><p>Your collection always saves in this browser. ${window.Cloud && Cloud.enabled ? "If you sign in, it also saves online, so clearing browser data won't lose it and you can continue on another device." : "Clearing browser data erases it, so make a backup code now and then."}</p></section>
 ${C.devTools ? `<section><h3>Testing tools</h3><p>For development only. Turn off with <code>devTools: false</code> in js/config.js before launch.</p><div class="row-btns"><button class="btn btn-ghost btn-sm" id="devPack">Grant a test pack</button><button class="btn btn-ghost btn-sm" id="devOdds">Run odds test (20,000 packs)</button></div><pre id="devOut" style="font-size:12px;color:var(--muted);white-space:pre-wrap"></pre></section>` : ""}
-<section><h3>Start over</h3><p>Erase this browser's collection and begin again with welcome packs.</p><button class="btn btn-ghost btn-sm" id="doReset" style="color:#ff9ab0">Reset collection</button><span id="resetConfirm"></span></section>
+<section><h3>Start over</h3><p>Erase this browser's collection and begin again with welcome packs.${window.Cloud && Cloud.signedIn ? " Because you're signed in, this also resets your cloud save." : ""}</p><button class="btn btn-ghost btn-sm" id="doReset" style="color:#ff9ab0">Reset collection</button><span id="resetConfirm"></span></section>
 </div>`, "narrow");
   }
   $("#btnSettings").addEventListener("click", openSettings);

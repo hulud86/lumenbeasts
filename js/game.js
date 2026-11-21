@@ -32,20 +32,26 @@ window.Game = (function () {
       bonusPacks: C.welcomePacks, dust: 0, pulled: {}, holo: {}, levels: {}, support: starterKit(), battle: { cleared: {}, wins: 0, losses: 0, team: null }, achievements: {}, lastSeen: Date.now(), sound: true };
   }
   let S = null, storageOK = true, tampered = false;
+  const saveListeners = [];
+  // Bring any older save up to date (used when loading from this browser, a backup code or the cloud)
+  function migrate(data) {
+    const s = Object.assign(fresh(), data);
+    if (!data.support) s.support = starterKit();      // older saves get the starter kit
+    if (!data.levels) s.levels = {};
+    if (!data.battle) s.battle = { cleared: {}, wins: 0, losses: 0, team: null };
+    // v2 story: 7 stages per isle. Old leader (-2) and guardian (-3) wins carry over.
+    if (s.battle && s.battle.cleared) for (const k of Object.keys(s.battle.cleared)) {
+      const m = k.match(/^(.*)-(2|3)$/); if (m) { s.battle.cleared[`${m[1]}-${m[2] === "2" ? "L" : "G"}`] = s.battle.cleared[k]; delete s.battle.cleared[k]; }
+    }
+    return s;
+  }
   function load() {
     try {
       const raw = localStorage.getItem(C.saveKey);
       if (raw) {
         const { data, sig } = JSON.parse(raw);
-        S = Object.assign(fresh(), data);
+        S = migrate(data);
         tampered = sig !== hash(JSON.stringify(data) + SALT);
-        if (!data.support) S.support = starterKit();      // older saves get the starter kit
-        if (!data.levels) S.levels = {};
-        if (!data.battle) S.battle = { cleared: {}, wins: 0, losses: 0, team: null };
-        // v2 story: 7 stages per isle. Old leader (-2) and guardian (-3) wins carry over.
-        if (S.battle && S.battle.cleared) for (const k of Object.keys(S.battle.cleared)) {
-          const m = k.match(/^(.*)-(2|3)$/); if (m) { S.battle.cleared[`${m[1]}-${m[2] === "2" ? "L" : "G"}`] = S.battle.cleared[k]; delete S.battle.cleared[k]; }
-        }
       } else S = fresh();
     } catch (e) { storageOK = false; S = fresh(); }
     return S;
@@ -54,7 +60,9 @@ window.Game = (function () {
     S.lastSeen = Math.max(S.lastSeen || 0, Date.now());
     try { localStorage.setItem(C.saveKey, JSON.stringify({ data: S, sig: hash(JSON.stringify(S) + SALT) })); }
     catch (e) { storageOK = false; }
+    for (const fn of saveListeners) try { fn(); } catch (e) { console.error(e); }
   }
+  const onSave = fn => saveListeners.push(fn);
 
   /* ---------- daily pack ---------- */
   const cooldown = () => C.dailyCooldownHours * HOUR;
@@ -191,8 +199,17 @@ window.Game = (function () {
   function importCode(code) {
     try { const { data, sig } = JSON.parse(decodeURIComponent(escape(atob(code.trim()))));
       if (!data || typeof data.owned !== "object") return false;
-      S = Object.assign(fresh(), data); tampered = sig !== hash(JSON.stringify(data) + SALT); save(); return true;
+      S = migrate(data); tampered = sig !== hash(JSON.stringify(data) + SALT); save(); return true;
     } catch (e) { return false; }
+  }
+  // Quick facts about a save code, for "which save do you want to keep?" choices
+  function summarize(code) {
+    try {
+      const d = code === undefined ? S : JSON.parse(decodeURIComponent(escape(atob(code.trim())))).data;
+      const cards = Object.values(d.owned || {}).reduce((a, b) => a + b, 0);
+      return { species: Object.keys(d.owned || {}).length, cards, packs: d.packsOpened || 0, wins: (d.battle && d.battle.wins) || 0,
+        dust: d.dust || 0, lastPlayed: d.lastSeen || d.created || 0, fresh: !d.packsOpened && !Object.keys(d.owned || {}).length };
+    } catch (e) { return null; }
   }
   function reset() { S = fresh(); save(); }
   function grantTestPack() { S.bonusPacks++; save(); }
@@ -209,6 +226,6 @@ window.Game = (function () {
     get state() { return S; }, get storageOK() { return storageOK; }, get tampered() { return tampered; },
     ALL, byId, pools, SUP, unlockedIds, ACH_IDS: () => ACH.map(a => a.id), ACH, achStatus, claim, claimable,
     dailyReady, msUntilDaily, packsAvailable, clockRolledBack, openPack, buyPackWithDust,
-    discovered, holoCount, totalCards, levelOf, levelMult, levelCost, canLevel, levelUp, completion, ownedOf, exportCode, importCode, reset, grantTestPack, save, simulate, generatePack
+    discovered, holoCount, totalCards, levelOf, levelMult, levelCost, canLevel, levelUp, completion, ownedOf, exportCode, importCode, summarize, onSave, reset, grantTestPack, save, simulate, generatePack
   };
 })();

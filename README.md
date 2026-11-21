@@ -45,4 +45,4 @@ node tools/simulate.js 200000
 
 ## Save data
 
-Progress is stored in the browser's local storage. Players can back up or move their collection with **Settings → Back up or move your collection**. Clearing browser data erases progress, and saves don't sync between devices on their own. See DESIGN.md §7 for the cloud-save upgrade path.
+Progress is always stored in the browser's local storage. Players who sign in (Google or an account code) also get **cloud saves** that follow them between devices. The API lives in `worker/` (Cloudflare Worker + D1) and deploys automatically. One-time setup: see **CLOUD-SETUP.md**. Until it's set up, the cloud button stays hidden and everything works offline as before. Players can also make a manual backup code in **Settings**.
