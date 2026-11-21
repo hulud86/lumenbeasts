@@ -50,53 +50,41 @@
   function mawStyle() {
     if (MAW_STYLE) return MAW_STYLE;
     const R = rng(MAW_SEED * 97 + 11), x = R();
-    return x < .32 ? "snarl" : x < .6 ? "roar" : x < .82 ? "grimace" : "frown";
+    return x < .36 ? "fangs" : x < .66 ? "toothy" : x < .9 ? "tongue" : "snaggle";
   }
-  // Same arguments as the old smile path (M x1 y1 Q cx cy x2 y2, stroke width sw). The smile itself
-  // is ignored: mouths are drawn level or turned down so the beasts look fierce, not cheerful.
+  // Same arguments as the old smile path: M x1 y1 Q cx cy x2 y2, stroke width sw
   function maw(x1, y1, cx, cy, x2, y2, sw = 1.8, line = "#1a1020", force) {
-    const L0 = Math.hypot(x2 - x1, y2 - y1), mx = (x1 + x2) / 2, my = (y1 + y2) / 2;
-    const w = Math.min(L0 * 1.45, 30), h = w / 2, ang = Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI;
-    const ux = (x2 - x1) / L0, uy = (y2 - y1) / L0, dRaw = (cx - mx) * -uy + (cy - my) * ux;
-    const d = Math.max(3, Math.min(Math.abs(dRaw) * 1.25, w * .4));
-    const R = rng(MAW_SEED * 131 + (MAW_N++) * 17), style = { fangs: "roar", toothy: "snarl", tongue: "roar", snaggle: "frown" }[force] || force || mawStyle();
-    const S = f(sw), thin = f(sw * .4), DARK = "#2c0816";
-    // quadratic lip from -h..h with control depth c (negative = arches up); y at x
-    const lip = c => x => c * (1 - (x / h) ** 2) / 2;
-    const tooth = (x, y0, len, wid, up) => `<path d="M${f(x - wid)} ${f(y0)} L${f(x)} ${f(y0 + (up ? -len : len))} L${f(x + wid)} ${f(y0)}Z" fill="#fffaf0" stroke="${line}" stroke-width="${thin}" stroke-linejoin="round"/>`;
-    const row = (yf, n, x0, len, up) => { let t = ""; for (let i = 0; i < n; i++) { const x = -x0 + (i + .5) * (2 * x0 / n); t += tooth(x, yf(x) + (up ? .2 : -.2), len, x0 / n, up); } return t; };
-    const fw = Math.max(1.1, w * .08), fl = Math.max(1.8, d * 1.05);
+    const mx = (x1 + x2) / 2, my = (y1 + y2) / 2, w = Math.min(Math.hypot(x2 - x1, y2 - y1) * 1.45, 30), h = w / 2;
+    const ang = Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI;
+    // perpendicular depth of the control point (positive = smile)
+    const L0 = Math.hypot(x2 - x1, y2 - y1), ux = (x2 - x1) / L0, uy = (y2 - y1) / L0, dRaw = (cx - mx) * -uy + (cy - my) * ux;
+    const flip = dRaw < 0, d = Math.max(3, Math.min(Math.abs(dRaw) * 1.25, w * .4));
+    const R = rng(MAW_SEED * 131 + (MAW_N++) * 17), style = force || mawStyle();
+    const top = .55 * d, bot = 3 * d;                   // lip control depths (curve peak = half)
+    const yTop = x => top * (1 - (x / h) ** 2) / 2 * 2 * .5, yBot = x => bot * (1 - (x / h) ** 2) / 2;
+    const fang = (x, len, wid) => `<path d="M${f(x - wid)} ${f(yTop(x) - .2)} L${f(x)} ${f(yTop(x) + len)} L${f(x + wid)} ${f(yTop(x) - .2)}Z" fill="#fff" stroke="${line}" stroke-width="${f(sw * .4)}" stroke-linejoin="round"/>`;
+    const fangUp = (x, len, wid) => `<path d="M${f(x - wid)} ${f(yBot(x) + .2)} L${f(x)} ${f(yBot(x) - len)} L${f(x + wid)} ${f(yBot(x) + .2)}Z" fill="#fff" stroke="${line}" stroke-width="${f(sw * .4)}" stroke-linejoin="round"/>`;
+    const open = `<path d="M${f(-h)} 0 Q0 ${f(top)} ${f(h)} 0 Q0 ${f(bot)} ${f(-h)} 0Z" fill="#3a0c1e" stroke="${line}" stroke-width="${f(sw)}" stroke-linejoin="round"/>`;
+    const fw = Math.max(1, w * .075), fl = Math.max(1.6, d * .95);
     let g = "";
-    if (style === "snarl") {
-      // corners pulled down, top lip curled up: the classic growl
-      const tc = -1.5 * d, bc = .9 * d, top = lip(tc), bot = lip(bc);
-      g = `<path d="M${f(-h)} ${f(d * .25)} Q0 ${f(tc)} ${f(h)} ${f(d * .25)} Q0 ${f(bc)} ${f(-h)} ${f(d * .25)}Z" fill="${DARK}" stroke="${line}" stroke-width="${S}" stroke-linejoin="round"/>`;
-      const n = w > 16 ? 5 : 4, T = x => top(x) + d * .25 * (1 - Math.abs(x / h)) * 0 + d * .25, B = x => bot(x) + d * .25;
-      g += row(T, n, h * .72, d * .55, false) + row(B, n - 1, h * .55, d * .45, true);
-      g += tooth(-h * .5, T(-h * .5) - .2, fl * 1.15, fw, false) + tooth(h * .5, T(h * .5) - .2, fl * 1.15, fw, false);
-    } else if (style === "roar") {
-      // wide-open jaws, level corners, fangs top and bottom
-      const tc = -1.1 * d, bc = 2.6 * d, top = lip(tc), bot = lip(bc);
-      g = `<path d="M${f(-h)} 0 Q0 ${f(tc)} ${f(h)} 0 Q0 ${f(bc)} ${f(-h)} 0Z" fill="${DARK}" stroke="${line}" stroke-width="${S}" stroke-linejoin="round"/>`;
-      g += `<ellipse cx="${f((R() - .5) * h * .3)}" cy="${f(bot(0) - d * .5)}" rx="${f(h * .42)}" ry="${f(d * .45)}" fill="#c8355a"/>`;
-      g += tooth(-h * .5, top(-h * .5) - .2, fl * 1.25, fw * 1.1, false) + tooth(h * .5, top(h * .5) - .2, fl * 1.25, fw * 1.1, false);
-      g += tooth(-h * .32, bot(-h * .32) + .2, fl * .8, fw * .9, true) + tooth(h * .32, bot(h * .32) + .2, fl * .8, fw * .9, true);
-    } else if (style === "grimace") {
-      // clenched teeth showing, straight lips
-      const ht = Math.max(2.6, d * .95), r0 = Math.min(ht / 2, 2.2);
-      g = `<rect x="${f(-h)}" y="${f(-ht / 2)}" width="${f(w)}" height="${f(ht)}" rx="${f(r0)}" fill="#fffaf0" stroke="${line}" stroke-width="${S}"/>`;
-      g += `<path d="M${f(-h + .6)} 0 H${f(h - .6)}" stroke="${line}" stroke-width="${thin}"/>`;
-      const n = w > 16 ? 6 : w > 10 ? 5 : 4;
-      for (let i = 1; i < n; i++) { const x = -h + i * w / n; g += `<path d="M${f(x)} ${f(-ht / 2)} V${f(ht / 2)}" stroke="${line}" stroke-width="${thin}"/>`; }
-      g += tooth(-h * .62, ht / 2 - .3, fl * .9, fw, false) + tooth(h * .62, ht / 2 - .3, fl * .9, fw, false);
+    if (style === "snaggle") {
+      g = `<path d="M${f(-h)} 0 Q0 ${f(d * 2)} ${f(h)} 0" stroke="${line}" stroke-width="${f(sw)}" fill="none" stroke-linecap="round"/>`;
+      const fy = x => d * 2 * (1 - (x / h) ** 2) / 2;
+      const one = (x, len) => `<path d="M${f(x - fw)} ${f(fy(x) - .3)} L${f(x)} ${f(fy(x) + len)} L${f(x + fw)} ${f(fy(x) - .3)}Z" fill="#fff" stroke="${line}" stroke-width="${f(sw * .4)}" stroke-linejoin="round"/>`;
+      g += R() < .5 ? one(-h * .42, fl * 1.1) + one(h * .42, fl * 1.1) : one((R() < .5 ? -1 : 1) * h * .38, fl * 1.2);
+    } else if (style === "toothy") {
+      const n = w > 16 ? 5 : w > 10 ? 4 : 3;
+      g = open;
+      for (let i = 0; i < n; i++) { const x = -h * .78 + (i + .5) * (h * 1.56 / n); g += fang(x, fl * .75, h * .78 / n); }
+      if (w > 9) for (let i = 0; i < n - 1; i++) { const x = -h * .6 + (i + .5) * (h * 1.2 / (n - 1)); g += fangUp(x, fl * .55, h * .6 / (n - 1)); }
+    } else if (style === "tongue") {
+      const tx = (R() < .5 ? -1 : 1) * h * .18, tw = h * .42, yb = yBot(tx);
+      g = open + `<path d="M${f(tx - tw)} ${f(yb - d * .9)} C${f(tx - tw)} ${f(yb + d * 1.4)} ${f(tx + tw)} ${f(yb + d * 1.4)} ${f(tx + tw)} ${f(yb - d * .9)}Z" fill="#ff6f91" stroke="${line}" stroke-width="${f(sw * .7)}"/><path d="M${f(tx)} ${f(yb - d * .4)} V${f(yb + d * .5)}" stroke="#c23a5e" stroke-width="${f(sw * .45)}" stroke-linecap="round"/>` +
+        fang(-h * .5, fl, fw) + fang(h * .5, fl, fw);
     } else {
-      // closed mouth, corners down, fangs over the lower lip
-      const c = -1.6 * d, y = lip(c);
-      g = `<path d="M${f(-h)} ${f(d * .35)} Q0 ${f(c + d * .35)} ${f(h)} ${f(d * .35)}" stroke="${line}" stroke-width="${S}" fill="none" stroke-linecap="round"/>`;
-      const Y = x => y(x) + d * .35;
-      g += tooth(-h * .4, Y(-h * .4) - .3, fl * 1.25, fw, false) + tooth(h * .4, Y(h * .4) - .3, fl * 1.25, fw, false);
+      g = open + `<ellipse cx="0" cy="${f(bot * .36)}" rx="${f(h * .38)}" ry="${f(d * .42)}" fill="#ff6f91" opacity=".85"/>` + fang(-h * .42, fl * 1.25, fw * 1.1) + fang(h * .42, fl * 1.25, fw * 1.1);
     }
-    return `<g transform="translate(${f(mx)} ${f(my)}) rotate(${f(ang)})">${g}</g>`;
+    return `<g transform="translate(${f(mx)} ${f(my)}) rotate(${f(ang + (flip ? 180 : 0))})">${g}</g>`;
   }
 
   // Element glyph centered at 0,0 (about 20 units tall)
